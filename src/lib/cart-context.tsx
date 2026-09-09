@@ -1,142 +1,139 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useReducer,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useState, useEffect, useMemo, type ReactNode } from "react";
 import type { StoreProduct, StoreVariant } from "./catalog";
-import { readJSONCookie, writeJSONCookie, deleteCookie } from "./cookies";
-
-export type CartItem = {
-  product: StoreProduct;
-  quantity: number;
-  variant?: StoreVariant;
-  /** Stable line key = productId + variantId (or "default") */
-  lineKey: string;
-};
-
-type CartState = Record<string, CartItem>;
-
-type Action =
-  | { type: "add"; product: StoreProduct; variant?: StoreVariant; quantity?: number }
-  | { type: "remove"; lineKey: string }
-  | { type: "setQty"; lineKey: string; quantity: number }
-  | { type: "clear" }
-  | { type: "hydrate"; state: CartState };
-
-function lineKeyFor(productId: string, variantId?: string): string {
-  return `${productId}::${variantId || "default"}`;
-}
-
-export function unitPrice(product: StoreProduct, variant?: StoreVariant): number {
-  if (variant?.price != null) return variant.price;
-  return product.price;
-}
-
-function reducer(state: CartState, action: Action): CartState {
-  switch (action.type) {
-    case "hydrate":
-      return action.state;
-    case "add": {
-      const { product, variant, quantity = 1 } = action;
-      const key = lineKeyFor(product.id, variant?.id);
-      const existing = state[key];
-      const nextQty = (existing?.quantity ?? 0) + quantity;
-      return {
-        ...state,
-        [key]: { product, variant, quantity: nextQty, lineKey: key },
-      };
-    }
-    case "remove": {
-      const next = { ...state };
-      delete next[action.lineKey];
-      return next;
-    }
-    case "setQty": {
-      if (action.quantity <= 0) {
-        const next = { ...state };
-        delete next[action.lineKey];
-        return next;
-      }
-      const existing = state[action.lineKey];
-      if (!existing) return state;
-      return { ...state, [action.lineKey]: { ...existing, quantity: action.quantity } };
-    }
-    case "clear":
-      return {};
-    default:
-      return state;
-  }
-}
-
-type CartContextValue = {
+import { readJSONCookie, writeCookie, deleteCookie } from "./cookies";
+import { getCatalog } from "./ghl.functions";
+import { parseCart, restoreCart, serializeCart, lineKeyFor, type CartItem } from "./cart-codec";
+import { toast } from "sonner";
+export type { CartItem } from "./cart-codec";
+export { lineKeyFor };
+export const CART_COOKIE = "mdh_cart";
+export const unitPrice = (product: StoreProduct, variant?: StoreVariant) =>
+  variant?.price ?? product.price;
+interface CartContextValue {
   items: CartItem[];
   count: number;
   subtotal: number;
-  add: (product: StoreProduct, variant?: StoreVariant, quantity?: number) => void;
-  remove: (lineKey: string) => void;
-  setQty: (lineKey: string, quantity: number) => void;
+  hydrated: boolean;
+  add: (p: StoreProduct, v?: StoreVariant, q?: number) => boolean;
+  remove: (key: string) => void;
+  setQty: (key: string, q: number) => void;
   clear: () => void;
-};
-
-const CART_COOKIE = "mdh_cart";
-const CartContext = createContext<CartContextValue | null>(null);
-
+}
+const Context = createContext<CartContextValue | null>(null);
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, {});
-  // Track whether we've hydrated from the cookie to avoid overwriting it
-  // with the empty initial state before the restore runs.
+  const [items, setItems] = useState<CartItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
-  const firstWrite = useRef(true);
-
-  // Restore cart from cookie on mount (client-only, post-hydration).
+  const [restoreError, setRestoreError] = useState(false);
+  const [retry, setRetry] = useState(0);
   useEffect(() => {
-    const saved = readJSONCookie<CartState>(CART_COOKIE);
-    if (saved && typeof saved === "object") {
-      dispatch({ type: "hydrate", state: saved });
-    }
-    setHydrated(true);
-  }, []);
-
-  // Persist cart to cookie whenever it changes (after initial hydration).
-  useEffect(() => {
-    if (!hydrated) return;
-    // Skip the very first post-hydration write if nothing changed.
-    if (firstWrite.current) {
-      firstWrite.current = false;
+    let active = true;
+    const saved = parseCart(readJSONCookie<unknown>(CART_COOKIE));
+    if (!saved.length) {
+      setHydrated(true);
       return;
     }
-    if (Object.keys(state).length === 0) {
-      deleteCookie(CART_COOKIE);
-    } else {
-      writeJSONCookie(CART_COOKIE, state);
-    }
-  }, [state, hydrated]);
-
-  const value = useMemo<CartContextValue>(() => {
-    const items = Object.values(state);
-    return {
-      items,
-      count: items.reduce((sum, i) => sum + i.quantity, 0),
-      subtotal: items.reduce((sum, i) => sum + i.quantity * unitPrice(i.product, i.variant), 0),
-      add: (product, variant, quantity) => dispatch({ type: "add", product, variant, quantity }),
-      remove: (lineKey) => dispatch({ type: "remove", lineKey }),
-      setQty: (lineKey, quantity) => dispatch({ type: "setQty", lineKey, quantity }),
-      clear: () => dispatch({ type: "clear" }),
+    setRestoreError(false);
+    getCatalog()
+      .then((c) => {
+        if (!active) return;
+        const restored = restoreCart(saved, c.products);
+        setItems(restored);
+        setHydrated(true);
+        if (
+          restored.length !== saved.length ||
+          restored.some((r, i) => r.quantity !== saved[i]?.quantity)
+        )
+          toast.info("Your cart was updated to reflect current stock.");
+      })
+      .catch(() => {
+        if (active) setRestoreError(true);
+      });
+    return () => {
+      active = false;
     };
-  }, [state]);
-
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+  }, [retry]);
+  // Persist in event handlers, not a mount effect: failed restoration cannot erase a saved cart.
+  const commit = (next: CartItem[]) => {
+    try {
+      const encoded = serializeCart(next);
+      if (next.length) writeCookie(CART_COOKIE, encoded);
+      else deleteCookie(CART_COOKIE);
+      setItems(next);
+      return true;
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not save your cart.");
+      return false;
+    }
+  };
+  const value = useMemo<CartContextValue>(
+    () => ({
+      items,
+      hydrated,
+      count: items.reduce((n, i) => n + i.quantity, 0),
+      subtotal:
+        items.reduce(
+          (n, i) => n + Math.round(unitPrice(i.product, i.variant) * 100) * i.quantity,
+          0,
+        ) / 100,
+      add: (product, v, q = 1) => {
+        if (!hydrated) {
+          toast.info("Wait for your saved cart to finish loading.");
+          return false;
+        }
+        if (!Number.isFinite(q)) return false;
+        const variant = v ?? product.variants.find((v) => v.available);
+        if (!product.inStock || !variant?.available) return false;
+        const key = lineKeyFor(product.id, variant.id);
+        const existing = items.find((i) => i.lineKey === key);
+        const limit = Math.min(99, variant.maxQuantity ?? 99);
+        const quantity = Math.min(limit, (existing?.quantity ?? 0) + Math.max(1, Math.floor(q)));
+        return commit([
+          ...items.filter((i) => i.lineKey !== key),
+          { product, variant, quantity, lineKey: key },
+        ]);
+      },
+      remove: (key) => commit(items.filter((i) => i.lineKey !== key)),
+      setQty: (key, q) => {
+        if (!Number.isFinite(q)) return;
+        commit(
+          items.flatMap((i) =>
+            i.lineKey !== key
+              ? [i]
+              : q <= 0
+                ? []
+                : [
+                    {
+                      ...i,
+                      quantity: Math.min(
+                        99,
+                        i.variant.maxQuantity ?? 99,
+                        Math.max(1, Math.floor(q)),
+                      ),
+                    },
+                  ],
+          ),
+        );
+      },
+      clear: () => commit([]),
+    }),
+    [items, hydrated],
+  );
+  return (
+    <Context.Provider value={value}>
+      {restoreError && (
+        <div role="alert" className="border-b bg-muted p-3 text-center text-sm">
+          Your saved cart could not be restored.{" "}
+          <button className="underline" onClick={() => setRetry((n) => n + 1)}>
+            Retry
+          </button>
+        </div>
+      )}
+      {children}
+    </Context.Provider>
+  );
 }
-
 export function useCart() {
-  const ctx = useContext(CartContext);
-  if (!ctx) throw new Error("useCart must be used within CartProvider");
+  const ctx = useContext(Context);
+  if (!ctx) throw new Error("Missing CartProvider");
   return ctx;
 }
-
-export { lineKeyFor, CART_COOKIE };

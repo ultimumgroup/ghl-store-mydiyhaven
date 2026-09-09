@@ -48,14 +48,14 @@ export const Route = createFileRoute("/products/$slug")({
 });
 
 function ProductPage() {
-  const { slug } = Route.useLoaderData();
+  const { slug } = Route.useParams();
   const { data } = useSuspenseQuery(productQueryOptions(slug));
   const product = data.product!;
   const related = data.related;
 
   const [qty, setQty] = useState(1);
-  const [variantId, setVariantId] = useState<string | undefined>(
-    product.variants.find((v) => v.available)?.id,
+  const [variantId, setVariantId] = useState<string>(
+    product.variants.find((v) => v.available)?.id ?? "",
   );
   const { add } = useCart();
   const { setOpen } = useCartUI();
@@ -69,7 +69,9 @@ function ProductPage() {
   const currentPrice = selectedVariant?.price ?? product.price;
   const canAdd = hasPrice && (!hasVariants || !!selectedVariant?.available) && product.inStock;
   const onSale =
-    hasPrice && product.compareAtPrice != null && product.compareAtPrice > currentPrice;
+    hasPrice &&
+    product.compareAtPrice != null &&
+    (selectedVariant?.compareAtPrice ?? product.compareAtPrice) > currentPrice;
   // Show "starting at" before a variant is chosen when variant prices differ.
   const showStartingAt = hasVariants && !selectedVariant && dp?.startingAt;
 
@@ -100,24 +102,26 @@ function ProductPage() {
           </h1>
           <p className="mt-2 text-lg text-muted-foreground">{product.tagline}</p>
 
-          <div className="mt-3 flex items-center gap-2 text-sm">
-            <div className="flex items-center gap-0.5">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <Star
-                  key={i}
-                  className={`h-4 w-4 ${
-                    i <= Math.round(product.rating)
-                      ? "fill-amber text-amber"
-                      : "text-muted-foreground/30"
-                  }`}
-                />
-              ))}
+          {product.reviews > 0 && (
+            <div className="mt-3 flex items-center gap-2 text-sm">
+              <div className="flex items-center gap-0.5">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Star
+                    key={i}
+                    className={`h-4 w-4 ${
+                      i <= Math.round(product.rating)
+                        ? "fill-amber text-amber"
+                        : "text-muted-foreground/30"
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="font-medium text-foreground">{product.rating}</span>
+              {product.reviews > 0 && (
+                <span className="text-muted-foreground">· {product.reviews} reviews</span>
+              )}
             </div>
-            <span className="font-medium text-foreground">{product.rating}</span>
-            {product.reviews > 0 && (
-              <span className="text-muted-foreground">· {product.reviews} reviews</span>
-            )}
-          </div>
+          )}
 
           <div className="mt-6 flex items-baseline gap-3">
             {hasPrice ? (
@@ -130,7 +134,7 @@ function ProductPage() {
                 </p>
                 {onSale && (
                   <p className="text-lg text-muted-foreground line-through">
-                    {formatPrice(product.compareAtPrice!)}
+                    {formatPrice(selectedVariant?.compareAtPrice ?? product.compareAtPrice!)}
                   </p>
                 )}
                 {onSale && (
@@ -187,8 +191,7 @@ function ProductPage() {
 
           {!hasPrice && (
             <div className="mt-6 rounded-lg border border-border bg-muted/50 p-4 text-sm text-muted-foreground">
-              Pricing for this piece is configured on request. Add it to your cart and we'll confirm
-              the final price before payment, or{" "}
+              This item has no supported online price yet. Please{" "}
               <Link to="/products" className="text-primary hover:underline">
                 browse priced pieces
               </Link>
@@ -207,7 +210,9 @@ function ProductPage() {
               </button>
               <span className="w-10 text-center font-medium">{qty}</span>
               <button
-                onClick={() => setQty((q) => q + 1)}
+                onClick={() =>
+                  setQty((q) => Math.min(q + 1, selectedVariant?.maxQuantity ?? 99, 99))
+                }
                 className="flex h-10 w-10 items-center justify-center text-muted-foreground hover:text-foreground"
                 aria-label="Increase quantity"
               >
@@ -219,7 +224,7 @@ function ProductPage() {
               className="flex-1"
               disabled={!canAdd}
               onClick={() => {
-                add(product, selectedVariant, qty);
+                if (!add(product, selectedVariant, qty)) return;
                 setOpen(true);
                 toast.success(
                   `${qty} × ${product.name}${selectedVariant ? ` (${selectedVariant.label})` : ""} added to cart`,
@@ -239,10 +244,12 @@ function ProductPage() {
 
           <div className="mt-6 space-y-2 text-sm text-muted-foreground">
             <p className="flex items-center gap-2">
-              <Truck className="h-4 w-4 text-primary" /> Free shipping over $150 · ships in 2–3 days
+              <Truck className="h-4 w-4 text-primary" /> Shipping cost and timing require
+              confirmation
             </p>
             <p className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-primary" /> 30-day returns, no questions asked
+              <ShieldCheck className="h-4 w-4 text-primary" /> Confirm customization and return
+              terms before payment
             </p>
             <p className="flex items-center gap-2">
               <Check className="h-4 w-4 text-primary" /> Handmade · one of a kind

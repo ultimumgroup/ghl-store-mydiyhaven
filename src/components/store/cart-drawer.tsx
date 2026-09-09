@@ -19,8 +19,6 @@ export function CartDrawer() {
   const { open, setOpen } = useCartUI();
   const { appliedPromo, getDiscount } = usePromo();
   const discount = getDiscount(subtotal);
-  const freeShipping = appliedPromo?.freeShipping ?? false;
-  const shipping = subtotal > 0 ? (subtotal > 150 || freeShipping ? 0 : 9) : 0;
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -121,23 +119,12 @@ export function CartDrawer() {
                   <span>−{formatPrice(discount)}</span>
                 </div>
               )}
-              <div className="flex justify-between text-sm text-muted-foreground">
-                <span>Shipping</span>
-                <span className="text-foreground">
-                  {shipping === 0 ? "Free" : formatPrice(shipping)}
-                </span>
-              </div>
-              {subtotal < 150 && !freeShipping && (
-                <p className="text-xs text-muted-foreground">
-                  Add {formatPrice(150 - subtotal)} more for free shipping.
-                </p>
-              )}
-              <div className="flex justify-between border-t border-border pt-3 font-display text-base font-semibold">
-                <span>Total</span>
-                <span>{formatPrice(subtotal - discount + shipping)}</span>
-              </div>
+              <p className="text-xs text-muted-foreground">
+                Shipping and tax are not calculated yet. This is an item subtotal, not a final
+                payment total.
+              </p>
               <Button asChild size="lg" className="w-full" onClick={() => setOpen(false)}>
-                <Link to="/checkout">Proceed to checkout</Link>
+                <Link to="/checkout">Review cart</Link>
               </Button>
             </div>
           </>

@@ -8,6 +8,7 @@
 import { defineConfig } from "@leadconnector/vite-tanstack-config";
 
 export default defineConfig({
+  vite: { resolve: { dedupe: ["react", "react-dom"] } },
   // Browser errors stay in the trusted parent-frame console-log flow;
   // do not expose the bridge collector on the public sandbox tunnel.
   devServerBridge: { errorCollector: false },
@@ -17,6 +18,8 @@ export default defineConfig({
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
     server: {
-    allowedHosts: true, entry: "server" },
+      allowedHosts: true,
+      entry: "server",
+    },
   },
 });

@@ -20,14 +20,15 @@ def shape(v,depth=0):
  if isinstance(v,dict):return {k:shape(x,depth+1) for k,x in v.items()} if depth<3 else list(v)
  if isinstance(v,list):return {'count':len(v),'first_shape':shape(v[0],depth+1) if v else None}
  return type(v).__name__
-status,products=get('/products/?locationId='+location+'&limit=100');print('products',status,json.dumps(shape(products)))
-items=products.get('products',[])
-for p in items[:3]:
- id=p.get('_id') or p.get('id');s,d=get('/products/'+id+'/price?locationId='+location+'&limit=100')
- print('product price probe',s,json.dumps(shape(d)))
- # Product identities, names, values are public catalog data; location never printed.
- print('price amounts',[{'name':x.get('name'),'amount':x.get('amount'),'currency':x.get('currency'),'availableQuantity':x.get('availableQuantity'),'options':x.get('variantOptionIds')} for x in d.get('prices',[])][:8])
-for label,path in [('collections','/products/collections?altId='+location+'&altType=location&limit=100'),('inventory','/products/inventory?altId='+location+'&altType=location&limit=100'),('coupons','/payments/coupon/list?altId='+location+'&altType=location&limit=10')]:
- s,d=get(path);print(label,s,json.dumps(shape(d)))
-if items:
- p=items[0];print('product mapping sample',json.dumps({k:v for k,v in p.items() if k in ['name','variants','collectionIds','collections','availableInStore','price','hasPrices','productType']}))
+if __name__ == '__main__':
+ status,products=get('/products/?locationId='+location+'&limit=100');print('products',status,json.dumps(shape(products)))
+ items=products.get('products',[])
+ for p in items[:3]:
+  id=p.get('_id') or p.get('id');s,d=get('/products/'+id+'/price?locationId='+location+'&limit=100')
+  print('product price probe',s,json.dumps(shape(d)))
+  # Product identities, names, values are public catalog data; location never printed.
+  print('price amounts',[{'name':x.get('name'),'amount':x.get('amount'),'currency':x.get('currency'),'availableQuantity':x.get('availableQuantity'),'options':x.get('variantOptionIds')} for x in d.get('prices',[])][:8])
+ for label,path in [('collections','/products/collections?altId='+location+'&altType=location&limit=100'),('inventory','/products/inventory?altId='+location+'&altType=location&limit=100'),('coupons','/payments/coupon/list?altId='+location+'&altType=location&limit=10')]:
+  s,d=get(path);print(label,s,json.dumps(shape(d)))
+ if items:
+  p=items[0];print('product mapping sample',json.dumps({k:v for k,v in p.items() if k in ['name','variants','collectionIds','collections','availableInStore','price','hasPrices','productType']}))

@@ -1,395 +1,187 @@
-// Server-side boundary for the headless GHL E-Commerce REST integration.
-// Uses GHL_LOCATION_ID and GHL_PIT (Private Integration Token) from process.env.
-// Maps raw GHL product/collection/variant shapes into the normalized
-// catalog in ./catalog.ts. Falls back to the bundled demo catalog when the API
-// is unreachable or unconfigured.
-
+// GHL is the sole catalog authority. This module performs GETs only.
+import type { CatalogResult, ProductResult } from "./catalog";
 import {
-  DEMO_COLLECTIONS,
-  demoProducts,
-  PRICE_OVERRIDES,
-  type CatalogResult,
-  type ProductResult,
-  type StoreCollection,
-  type StoreProduct,
-  type StoreVariant,
-} from "./catalog";
-
-const GHL_BASE_URL = "https://services.leadconnectorhq.com";
-const DEFAULT_VERSION = "2021-07-28";
-
-function getHeaders(pit: string) {
-  return {
-    Authorization: `Bearer ${pit}`,
-    Version: DEFAULT_VERSION,
-    Accept: "application/json",
-    "Content-Type": "application/json",
-  };
+  normalizeProduct,
+  type RawProduct,
+  type RawPrice,
+  type RawCollection,
+} from "./ghl-catalog";
+const BASE = "https://services.leadconnectorhq.com";
+const VERSION = "2021-07-28";
+const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
+let nextRequestAt = 0;
+function config() {
+  const pit = process.env["GHL_PIT"];
+  const location = process.env["GHL_LOCATION_ID"];
+  if (!pit || !location) throw new Error("Store connection is not configured.");
+  return { pit, location };
 }
-
-function getLocationId() {
-  return process.env.GHL_LOCATION_ID || "MSmQrVKlTBkzE6chWWis";
-}
-
-// --- Raw GHL shapes ---------------------------------------------------------
-
-interface GHLProductRaw {
-  _id?: string;
-  id?: string;
-  name: string;
-  description?: string;
-  slug?: string;
-  image?: string;
-  images?: string[];
-  media?: Array<{ url: string } | string>;
-  productType?: string;
-  availableInStore?: boolean;
-  collectionIds?: string[];
-  collections?: Array<{ _id?: string; id?: string }>;
-  statementDescriptor?: string;
-  // GHL stores Shopify-style "option groups" under `variants`, NOT priced SKUs.
-  // Each entry is an option name (e.g. "Material") with a list of option values.
-  variants?: GHLOptionGroupRaw[];
-  trackInventory?: boolean;
-  trackProductInventory?: boolean;
-  inventoryCount?: number;
-  hasPrices?: boolean;
-  hasVariants?: boolean;
-  variantsLength?: number;
-  price?: number;
-  compareAtPrice?: number;
-  status?: string;
-}
-
-interface GHLOptionGroupRaw {
-  id?: string;
-  name: string;
-  options?: Array<{ id?: string; name: string }>;
-}
-
-// GHL prices live on a separate /payments/prices endpoint, keyed by productId
-// and optionally variantId. Amounts are in cents.
-interface GHLPriceRaw {
-  _id?: string;
-  id?: string;
-  productId?: string;
-  variantId?: string;
-  amount?: number;
-  compareAtAmount?: number;
-  currency?: string;
-  nickname?: string;
-  recurring?: boolean;
-  status?: string;
-  type?: string;
-}
-
-interface GHLCollectionRaw {
-  _id?: string;
-  id?: string;
-  name: string;
-  slug?: string;
-  description?: string;
-  image?: string;
-  productIds?: string[];
-  stats?: { productCount?: number };
-  seo?: { title?: string | null; description?: string | null };
-}
-
-// --- Mappers ----------------------------------------------------------------
-
-function slugify(input: string): string {
-  return input
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 80);
-}
-
-function pickImage(raw: GHLProductRaw): string {
-  if (raw.image) return raw.image;
-  if (Array.isArray(raw.media) && raw.media.length) {
-    const m = raw.media[0];
-    return typeof m === "string" ? m : m.url;
+async function get(
+  path: string,
+  query: Record<string, string> = {},
+): Promise<Record<string, unknown>> {
+  const { pit } = config();
+  // Keep a single warm isolate below the documented burst budget; no shared DB needed.
+  const wait = Math.max(0, nextRequestAt - Date.now());
+  nextRequestAt = Math.max(nextRequestAt, Date.now()) + 150;
+  await delay(wait);
+  for (let attempt = 0; attempt < 3; attempt++) {
+    let res: Response;
+    try {
+      res = await fetch(`${BASE}${path}?${new URLSearchParams(query)}`, {
+        headers: {
+          Authorization: `Bearer ${pit}`,
+          Version: VERSION,
+          Accept: "application/json",
+          "User-Agent": "MyDIYHaven-Store/1.0",
+        },
+        signal: AbortSignal.timeout(15000),
+      });
+    } catch {
+      throw new Error("Store data is temporarily unreachable. Please retry.");
+    }
+    if ((res.status === 429 || res.status >= 500) && attempt < 2) {
+      await delay(
+        Math.min(10000, Math.max(1000, Number(res.headers.get("retry-after") || 0) * 1000)) *
+          (attempt + 1),
+      );
+      continue;
+    }
+    // No raw provider errors, URLs or credentials go to logs/RPC responses.
+    if (!res.ok) throw new Error(`Store data request failed (HTTP ${res.status}).`);
+    const body: unknown = await res.json();
+    if (!body || typeof body !== "object") throw new Error("Unexpected store data response.");
+    return body as Record<string, unknown>;
   }
-  if (Array.isArray(raw.images) && raw.images.length) return raw.images[0];
-  return "";
+  throw new Error("Store data is temporarily busy.");
 }
-
-function pickImages(raw: GHLProductRaw): string[] {
-  const out: string[] = [];
-  if (Array.isArray(raw.media)) {
-    for (const m of raw.media) out.push(typeof m === "string" ? m : m.url);
+function totalOf(body: Record<string, unknown>): number | undefined {
+  let t = body["total"] ?? body["totalCount"];
+  if (Array.isArray(t)) t = t[0];
+  if (t && typeof t === "object") t = (t as Record<string, unknown>)["total"];
+  return typeof t === "number" ? t : undefined;
+}
+async function list<T>(path: string, query: Record<string, string>, key: string): Promise<T[]> {
+  const out: T[] = [];
+  const seen = new Set<string>();
+  for (let offset = 0; offset < 10000; offset += 100) {
+    const body = await get(path, { ...query, limit: "100", offset: String(offset) });
+    const page = body[key];
+    if (!Array.isArray(page)) throw new Error("Unexpected store list response.");
+    for (const item of page) {
+      const id = String(item?._id ?? "");
+      if (!id || seen.has(id)) throw new Error("Invalid or repeated store page.");
+      seen.add(id);
+      out.push(item as T);
+    }
+    const total = totalOf(body);
+    if (page.length < 100 || (total != null && out.length >= total)) return out;
   }
-  if (Array.isArray(raw.images)) for (const u of raw.images) if (!out.includes(u)) out.push(u);
-  const main = pickImage(raw);
-  if (main && !out.includes(main)) out.unshift(main);
+  throw new Error("Catalog exceeds this storefront pagination limit.");
+}
+async function mapLimit<T, R>(items: T[], work: (item: T) => Promise<R>): Promise<R[]> {
+  const out: R[] = [];
+  let next = 0;
+  await Promise.all(
+    Array.from({ length: Math.min(6, items.length) }, async () => {
+      while (next < items.length) {
+        const i = next++;
+        out[i] = await work(items[i]!);
+      }
+    }),
+  );
   return out;
 }
-
-function priceToDollars(amount: unknown): number {
-  const n = Number(amount);
-  if (!Number.isFinite(n) || n <= 0) return 0;
-  // GHL prices are typically stored in cents; detect magnitude.
-  return n >= 1000 ? Math.round(n) / 100 : Math.round(n * 100) / 100;
-}
-
-/**
- * GHL products expose Shopify-style option groups (e.g. "Material" with values
- * Cherry/Red Oak/Bamboo/Mahogany), not priced SKUs. We expand every combination
- * of option values into a synthetic variant so the storefront can render proper
- * dropdowns. Per-variant prices come from the /payments/prices endpoint, keyed
- * by variantId; when absent the variant inherits the product base price.
- */
-function mapOptionGroupsToVariants(
-  groups: GHLOptionGroupRaw[],
-  basePrice: number,
-  priceMap: Map<string, { price?: number; compareAt?: number }>,
-): StoreVariant[] {
-  if (!groups || groups.length === 0) return [];
-
-  // Each option group contributes one dimension. Build the cartesian product.
-  const dimensions = groups.map((g) => ({
-    name: g.name,
-    values: (g.options ?? []).map((o) => ({ id: o.id || o.name, name: o.name })),
-  }));
-
-  // Cartesian product of all option values across groups.
-  let combos: Array<{ id: string; value: string; name: string }[]> = [[]];
-  for (const dim of dimensions) {
-    const next: Array<{ id: string; value: string; name: string }[]> = [];
-    for (const prefix of combos) {
-      for (const val of dim.values) {
-        next.push([...prefix, { id: val.id, value: val.name, name: dim.name }]);
-      }
-    }
-    combos = next;
-  }
-
-  return combos.map((combo, i) => {
-    const label = combo.map((c) => c.value).join(" / ");
-    const variantKey = combo.map((c) => c.id).join("__") || `v-${i}`;
-    const vp = priceMap.get(variantKey);
-    const vPrice = vp?.price ?? (basePrice > 0 ? basePrice : undefined);
-    return {
-      id: variantKey,
-      name: label,
-      label,
-      options: combo.map((c) => ({ id: c.id, name: c.name, value: c.value })),
-      price: vPrice,
-      available: true,
-    };
-  });
-}
-
-function mapProduct(
-  raw: GHLProductRaw,
-  collections: GHLCollectionRaw[],
-  priceMap: Map<string, { price?: number; compareAt?: number }>,
-): StoreProduct {
-  const id = raw._id || raw.id || "";
-  const slug = raw.slug || slugify(raw.name) || id;
-  const firstCollectionId =
-    raw.collectionIds?.[0] || raw.collections?.[0]?._id || raw.collections?.[0]?.id;
-  const matchedCol = collections.find(
-    (c) => c._id === firstCollectionId || c.id === firstCollectionId,
+async function pricesFor(id: string) {
+  const { location } = config();
+  return list<RawPrice>(
+    `/products/${encodeURIComponent(id)}/price`,
+    { locationId: location },
+    "prices",
   );
-  const category = matchedCol?.name || raw.productType || "General";
-
-  // Product-level price from the prices endpoint (no variantId), then API price,
-  // then admin override, then 0 (price-on-request).
-  const prodPrice = priceMap.get(id);
-  const apiPrice = prodPrice?.price ?? priceToDollars(raw.price);
-  const override = PRICE_OVERRIDES[id] ?? PRICE_OVERRIDES[slug];
-  const compareAt = prodPrice?.compareAt ?? priceToDollars(raw.compareAtPrice);
-  const basePrice = apiPrice > 0 ? apiPrice : (override ?? 0);
-
-  // Variants: GHL option groups expanded into selectable combinations, with
-  // per-variant prices applied from the prices endpoint.
-  const variants = mapOptionGroupsToVariants(raw.variants ?? [], basePrice, priceMap);
-
-  const trackInv = raw.trackInventory || raw.trackProductInventory;
-  const inv = raw.inventoryCount;
-  const inStock =
-    raw.status && raw.status !== "active"
-      ? false
-      : trackInv && inv != null
-        ? inv > 0
-        : variants.length
-          ? variants.some((v) => v.available)
-          : true;
-
-  return {
-    id,
-    slug,
-    name: raw.name || "Untitled product",
-    tagline: raw.statementDescriptor || stripHtml(raw.description).slice(0, 80) || "",
-    description: stripHtml(raw.description) || "",
-    price: basePrice,
-    compareAtPrice: compareAt > basePrice ? compareAt : undefined,
-    category,
-    material: raw.productType || "",
-    image: pickImage(raw),
-    images: pickImages(raw),
-    rating: 4.8,
-    reviews: 0,
-    inStock,
-    collectionId: firstCollectionId,
-    collectionIds: raw.collectionIds || [],
-    variants,
-  };
 }
-
-function stripHtml(html?: string): string {
-  if (!html) return "";
-  return html
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function mapCollection(raw: GHLCollectionRaw): StoreCollection {
-  const id = raw._id || raw.id || "";
-  const count = raw.stats?.productCount ?? 0;
-  return {
-    id,
-    slug: raw.slug || slugify(raw.name) || id,
-    name: raw.name || "Collection",
-    description: raw.seo?.description || "",
-    image: raw.image || "",
-    itemCount: count,
-  };
-}
-
-// --- Fetchers ---------------------------------------------------------------
-
-async function ghlGet(path: string, pit: string): Promise<{ ok: boolean; data: unknown }> {
-  try {
-    const res = await fetch(`${GHL_BASE_URL}${path}`, { headers: getHeaders(pit) });
-    if (!res.ok) return { ok: false, data: null };
-    const text = await res.text();
-    if (!text) return { ok: true, data: null };
-    return { ok: true, data: JSON.parse(text) };
-  } catch (err) {
-    console.error("GHL fetch error:", path, err);
-    return { ok: false, data: null };
-  }
-}
-
-function asArray<T>(data: unknown, key: string): T[] {
-  if (!data || typeof data !== "object") return [];
-  const obj = data as Record<string, unknown>;
-  const arr = obj[key] ?? obj.data ?? obj.products ?? obj.collections ?? [];
-  return Array.isArray(arr) ? (arr as T[]) : [];
-}
-
-/**
- * Fetch all prices for the location and build a lookup keyed by productId
- * (product-level price) and by `productId__variantId` (per-variant price).
- * GHL prices live on /payments/prices, separate from products, with amounts
- * in cents. Returns an empty map if the endpoint is unavailable.
- */
-async function fetchPriceMap(
-  locationId: string,
-  pit: string,
-): Promise<Map<string, { price?: number; compareAt?: number }>> {
-  const map = new Map<string, { price?: number; compareAt?: number }>();
-  const res = await ghlGet(
-    `/payments/prices/?altId=${encodeURIComponent(locationId)}&altType=location&limit=100`,
-    pit,
-  );
-  if (!res.ok) return map;
-
-  const rawPrices = asArray<GHLPriceRaw>(res.data, "prices");
-  for (const p of rawPrices) {
-    const amount = priceToDollars(p.amount);
-    const compareAt = priceToDollars(p.compareAtAmount);
-    const pid = String(p.productId || "");
-    const vid = String(p.variantId || "");
-    if (!pid) continue;
-    const key = vid ? `${pid}__${vid}` : pid;
-    const existing = map.get(key) ?? {};
-    if (amount > 0) existing.price = amount;
-    if (compareAt > 0) existing.compareAt = compareAt;
-    map.set(key, existing);
-  }
-  return map;
-}
-
-export async function fetchCatalogServer(): Promise<CatalogResult> {
-  const pit = process.env.GHL_PIT;
-  if (!pit) {
-    return {
-      products: demoProducts(),
-      collections: DEMO_COLLECTIONS,
-      live: false,
-      error: "GHL_PIT not configured",
-    };
-  }
-  const locationId = getLocationId();
-
-  // Collections + prices require altId + altType (locationId alone returns 422).
-  const [prodRes, colRes, priceMap] = await Promise.all([
-    ghlGet(`/products/?locationId=${encodeURIComponent(locationId)}&limit=100`, pit),
-    ghlGet(
-      `/products/collections?altId=${encodeURIComponent(locationId)}&altType=location&limit=100`,
-      pit,
-    ),
-    fetchPriceMap(locationId, pit),
+let cache: { key: string; expires: number; value: CatalogResult } | undefined;
+let pending: { key: string; promise: Promise<CatalogResult> } | undefined;
+async function loadCatalog(): Promise<CatalogResult> {
+  const { location } = config();
+  const [raw, cols] = await Promise.all([
+    list<RawProduct>("/products/", { locationId: location }, "products"),
+    list<RawCollection>("/products/collections", { altId: location, altType: "location" }, "data"),
   ]);
-
-  if (!prodRes.ok) {
-    return {
-      products: demoProducts(),
-      collections: DEMO_COLLECTIONS,
-      live: false,
-      error: "GHL products API unavailable",
-    };
-  }
-
-  const rawProducts = asArray<GHLProductRaw>(prodRes.data, "products");
-  const rawCollections = asArray<GHLCollectionRaw>(colRes.data, "collections");
-
-  const products = rawProducts
-    .filter((p) => p.availableInStore !== false)
-    .map((p) => mapProduct(p, rawCollections, priceMap));
-
-  // Filter out the empty "Default" collections that GHL seeds.
-  const collections = rawCollections
-    .map(mapCollection)
-    .filter((c) => c.name !== "Default" || (c.itemCount ?? 0) > 0);
-
-  if (products.length === 0) {
-    return {
-      products: demoProducts(),
-      collections: DEMO_COLLECTIONS,
-      live: false,
-      error: "No products returned",
-    };
-  }
-
+  const published = raw.filter(
+    (p) => p.availableInStore === true && (!p.status || p.status === "active"),
+  );
+  const collections = cols
+    .filter((c) => c.name !== "Default")
+    .map((c) => ({
+      id: c._id,
+      slug: c.slug || c._id,
+      name: c.name,
+      description: c.seo?.description || "",
+      image: c.image || "",
+      itemCount: 0,
+    }));
+  // Imported Shopify products omit collectionIds. The documented collection filter
+  // supplies membership without copying/mutating GHL records.
+  const memberships = new Map<string, string[]>();
+  await mapLimit(collections, async (c) => {
+    const members = await list<RawProduct>(
+      "/products/",
+      { locationId: location, collectionIds: c.id },
+      "products",
+    );
+    const visible = new Set(published.map((p) => p._id));
+    for (const p of members) {
+      if (!visible.has(p._id)) continue;
+      memberships.set(p._id, [...(memberships.get(p._id) || []), c.id]);
+      c.itemCount++;
+    }
+  });
+  const products = await mapLimit(published, async (p) =>
+    normalizeProduct(
+      p,
+      await pricesFor(p._id),
+      [...new Set([...(p.collectionIds || []), ...(memberships.get(p._id) || [])])],
+      collections,
+    ),
+  );
   return { products, collections, live: true };
 }
-
-export async function fetchProductServer(slug: string): Promise<ProductResult> {
-  const catalog = await fetchCatalogServer();
-  const product = catalog.products.find((p) => p.slug === slug || p.id === slug) || null;
-  const related = product
-    ? catalog.products
-        .filter((p) => p.id !== product.id)
-        .sort((a, b) => {
-          const aSame = a.collectionId === product.collectionId ? 0 : 1;
-          const bSame = b.collectionId === product.collectionId ? 0 : 1;
-          return aSame - bSame;
-        })
-        .slice(0, 4)
-    : [];
-  return { product, related, live: catalog.live };
+export async function fetchCatalogServer(): Promise<CatalogResult> {
+  // In-memory only, keyed by location+credential; never a second source of truth.
+  const { pit, location } = config();
+  const key = location + pit;
+  if (cache?.key === key && cache.expires > Date.now()) return cache.value;
+  if (pending?.key === key) return pending.promise;
+  const promise = loadCatalog().then((value) => {
+    cache = { key, value, expires: Date.now() + 300000 };
+    return value;
+  });
+  const entry = { key, promise };
+  pending = entry;
+  try {
+    return await promise;
+  } finally {
+    if (pending === entry) pending = undefined;
+  }
 }
-
-// --- Promo validation -------------------------------------------------------
-
+export async function fetchProductServer(slug: string): Promise<ProductResult> {
+  const c = await fetchCatalogServer();
+  const product = c.products.find((p) => p.slug === slug || p.id === slug) || null;
+  return {
+    product,
+    related: product
+      ? c.products
+          .filter(
+            (p) =>
+              p.id !== product.id &&
+              p.collectionIds?.some((id) => product.collectionIds?.includes(id)),
+          )
+          .slice(0, 4)
+      : [],
+    live: true,
+  };
+}
 export interface PromoValidationResult {
   valid: boolean;
   code?: string;
@@ -400,218 +192,83 @@ export interface PromoValidationResult {
   message?: string;
   freeShipping?: boolean;
 }
-
-const DEMO_PROMOS: Record<
-  string,
-  { type: "percent" | "fixed"; value: number; label: string; freeShipping?: boolean }
-> = {
-  HAVEN10: { type: "percent", value: 10, label: "10% off your order" },
-  WELCOME15: { type: "percent", value: 15, label: "15% off — welcome gift", freeShipping: true },
-  FREESHIP: { type: "fixed", value: 0, label: "Free shipping", freeShipping: true },
-  CRAFT25: { type: "fixed", value: 25, label: "$25 off your order" },
-};
-
-function computeDiscount(type: "percent" | "fixed", value: number, subtotal: number): number {
-  if (type === "percent") return Math.round(subtotal * (value / 100) * 100) / 100;
-  return Math.min(value, subtotal);
-}
-
 export async function validatePromoCodeServer(input: {
   code: string;
   subtotal: number;
 }): Promise<PromoValidationResult> {
-  const pit = process.env.GHL_PIT;
-  const locationId = getLocationId();
-  const code = input.code.trim().toUpperCase();
-  const subtotal = Math.max(0, input.subtotal);
-
-  if (!code) return { valid: false, message: "Enter a promo code." };
-
-  if (pit) {
-    try {
-      // Try the documented coupons endpoint; fall back to demo codes on 404.
-      const res = await fetch(
-        `${GHL_BASE_URL}/coupons/?altId=${encodeURIComponent(locationId)}&altType=location&limit=100`,
-        { headers: getHeaders(pit) },
-      );
-      if (res.ok) {
-        const data = await res.json();
-        const coupons: Array<Record<string, unknown>> = data.coupons || data.data || [];
-        const match = coupons.find((c) => {
-          const name = String(c.name || c.code || c.couponCode || "").toUpperCase();
-          return name === code;
-        });
-        if (match) {
-          const rawType = String(match.type || match.discountType || "").toLowerCase();
-          const isPercent = rawType.includes("percent") || rawType === "percentage";
-          const amount = Number(match.value ?? match.amount ?? match.discount ?? 0);
-          const type: "percent" | "fixed" = isPercent ? "percent" : "fixed";
-          const value = Number.isFinite(amount) ? amount : 0;
-          return {
-            valid: true,
-            code,
-            type,
-            value,
-            discountAmount: computeDiscount(type, value, subtotal),
-            label: isPercent ? `${value}% off your order` : `$${value} off your order`,
-            message: "Promo applied.",
-          };
-        }
-      }
-    } catch (err) {
-      console.error("GHL Coupons API error, falling back to demo codes:", err);
-    }
-  }
-
-  const demo = DEMO_PROMOS[code];
-  if (demo) {
-    return {
-      valid: true,
-      code,
-      type: demo.type,
-      value: demo.value,
-      discountAmount: computeDiscount(demo.type, demo.value, subtotal),
-      label: demo.label,
-      freeShipping: demo.freeShipping,
-      message: "Promo applied.",
-    };
-  }
-
-  return { valid: false, message: "That code isn't valid. Try again." };
-}
-
-// --- Order creation ---------------------------------------------------------
-
-export async function createGHLOrderServer(orderData: {
-  email: string;
-  phone?: string;
-  name: string;
-  address: string;
-  city: string;
-  state: string;
-  zip: string;
-  items: Array<{
-    productId: string;
-    quantity: number;
-    price: number;
-    name: string;
-    variantId?: string;
-  }>;
-  totalAmount: number;
-  promoCode?: string;
-  discountAmount?: number;
-  payment?: {
-    mode?: "card" | "cash" | "cheque" | "bank_transfer" | "other";
-    card?: {
-      type?: string;
-      last4?: string;
-    };
-    notes?: string;
+  const { location } = config();
+  const data = await get("/payments/coupon/list", {
+    altId: location,
+    altType: "location",
+    limit: "100",
+    offset: "0",
+  });
+  const rows = Array.isArray(data["data"]) ? data["data"] : [];
+  const exists = rows.some(
+    (c) => String(c.code || c.couponCode || "").toUpperCase() === input.code.trim().toUpperCase(),
+  );
+  // No configured coupons in the verified location. Do not invent eligibility or
+  // calculate a discount until a real hosted checkout can redeem it atomically.
+  return {
+    valid: false,
+    message: exists
+      ? "This code must be applied at the secure payment checkout."
+      : "That code is not available.",
   };
-}): Promise<{ success: boolean; orderId?: string; error?: string; paymentRecorded?: boolean }> {
-  const pit = process.env.GHL_PIT;
-  const locationId = getLocationId();
-  const refId = `MDH-${Math.floor(100000 + Math.random() * 899999)}`;
-
-  // No PIT configured (e.g. local dev) — return a local reference so the
-  // customer flow completes. This is NOT a failure; the storefront simply
-  // isn't connected to a live sub-account yet.
-  if (!pit) return { success: true, orderId: refId, paymentRecorded: true };
-
-  try {
-    const body = {
-      locationId,
-      altId: locationId,
-      altType: "location",
-      contact: { email: orderData.email, phone: orderData.phone, name: orderData.name },
-      shippingAddress: {
-        address1: orderData.address,
-        city: orderData.city,
-        state: orderData.state,
-        postalCode: orderData.zip,
-        country: "US",
-      },
-      lineItems: orderData.items.map((i) => ({
-        product: i.productId,
-        variantId: i.variantId,
-        quantity: i.quantity,
-        price: i.price,
-        title: i.name,
-      })),
-      amount: orderData.totalAmount,
-      currency: "USD",
-      source: "storefront",
-      ...(orderData.promoCode
-        ? { couponCode: orderData.promoCode, discount: orderData.discountAmount ?? 0 }
-        : {}),
-    };
-
-    const res = await fetch(`${GHL_BASE_URL}/payments/orders`, {
-      method: "POST",
-      headers: getHeaders(pit),
-      body: JSON.stringify(body),
-    });
-
-    if (!res.ok) {
-      const errText = await res.text().catch(() => "");
-      console.error("GHL Order API non-ok:", res.status, errText);
-      return {
-        success: false,
-        error: `We couldn't place your order (HTTP ${res.status}). Please try again or contact us.`,
-      };
-    }
-
-    const data = await res.json();
-    const orderId = data._id || data.id || refId;
-
-    // Record payment if order was created successfully
-    let paymentRecorded = false;
-    try {
-      const paymentPayload = {
-        altId: locationId,
-        altType: "location",
-        mode: orderData.payment?.mode || "card",
-        card: orderData.payment?.card || {
-          type: "card",
-          last4: "4242",
-        },
-        notes: orderData.payment?.notes || "Storefront online checkout",
-        amount: orderData.totalAmount,
-        meta: {
-          source: "storefront_checkout",
-          timestamp: new Date().toISOString(),
-        },
-        isPartialPayment: false,
-      };
-
-      const payRes = await fetch(
-        `${GHL_BASE_URL}/payments/orders/${encodeURIComponent(orderId)}/record-payment`,
-        {
-          method: "POST",
-          headers: {
-            ...getHeaders(pit),
-            Version: "2023-02-21",
-          },
-          body: JSON.stringify(paymentPayload),
-        },
-      );
-
-      if (payRes.ok) {
-        paymentRecorded = true;
-      } else {
-        const payErr = await payRes.text().catch(() => "");
-        console.warn("Record payment non-200:", payRes.status, payErr);
-      }
-    } catch (payErr) {
-      console.warn("Payment recording error:", payErr);
-    }
-
-    return { success: true, orderId, paymentRecorded };
-  } catch (err) {
-    console.error("GHL Order API error:", err);
+}
+export interface QuoteLineInput {
+  productId: string;
+  variantId: string;
+  quantity: number;
+}
+export async function quoteCartServer(items: QuoteLineInput[]) {
+  if (!items.length || items.length > 20) throw new Error("Choose between 1 and 20 cart lines.");
+  if (new Set(items.map((i) => `${i.productId}:${i.variantId}`)).size !== items.length)
+    throw new Error("Duplicate cart lines are not allowed.");
+  const c = await fetchCatalogServer();
+  const lines = await mapLimit(items, async (i) => {
+    if (!Number.isInteger(i.quantity) || i.quantity < 1 || i.quantity > 99)
+      throw new Error("Invalid quantity.");
+    const p = c.products.find((p) => p.id === i.productId);
+    if (!p) throw new Error("An item is no longer available.");
+    const prices = await pricesFor(p.id);
+    const price = prices.find(
+      (v) =>
+        v._id === i.variantId &&
+        !v.deleted &&
+        v.type === "one_time" &&
+        v.currency.toUpperCase() === "USD",
+    );
+    if (!price || !Number.isFinite(price.amount) || price.amount <= 0)
+      throw new Error("An item price is no longer available.");
+    if (
+      price.trackInventory &&
+      !price.allowOutOfStockPurchases &&
+      (price.availableQuantity ?? 0) < i.quantity
+    )
+      throw new Error(`Requested quantity is unavailable for ${p.name}.`);
     return {
-      success: false,
-      error: "A network error occurred while placing your order. Please try again.",
+      productId: p.id,
+      variantId: price._id,
+      name: p.name,
+      variantName: price.name || "Standard",
+      quantity: i.quantity,
+      unitAmount: price.amount,
+      lineAmount: (Math.round(price.amount * 100) * i.quantity) / 100,
     };
-  }
+  });
+  return {
+    lines,
+    subtotal: lines.reduce((s, l) => s + Math.round(l.lineAmount * 100), 0) / 100,
+    currency: "USD" as const,
+    quotedAt: new Date().toISOString(),
+    checkoutAvailable: false as const,
+  };
+}
+// Compatibility guard for old clients still calling the exported RPC.
+export async function createGHLOrderServer(_data: unknown) {
+  return {
+    success: false,
+    error: "Online payment is not configured. Your cart has been preserved.",
+  };
 }

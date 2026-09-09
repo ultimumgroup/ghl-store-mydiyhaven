@@ -36,3 +36,6 @@ src/tailwind.config.vibe.json
 .env
 .env.*
 !.env.example
+
+__pycache__/
+test-results/

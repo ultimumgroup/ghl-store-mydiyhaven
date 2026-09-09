@@ -2,6 +2,10 @@
 // Imported by both client (types/demo data) and server modules.
 
 export interface StoreVariant {
+  priceId?: string;
+  currency?: string;
+  maxQuantity?: number;
+  compareAtPrice?: number;
   id: string;
   name: string;
   /** Display label combining its option values, e.g. "Small / Amber" */
@@ -65,7 +69,8 @@ export interface DisplayPrice {
 }
 
 export function displayPrice(product: StoreProduct): DisplayPrice | undefined {
-  const variantPrices = product.variants
+  const available = product.variants.filter((v) => v.available);
+  const variantPrices = (available.length ? available : product.variants)
     .map((v) => v.price)
     .filter((p): p is number => p != null && p > 0);
 

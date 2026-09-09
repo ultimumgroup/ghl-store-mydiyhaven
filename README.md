@@ -1,98 +1,59 @@
-# My DIY Haven — Headless E-Commerce Storefront
+# My DIY Haven — GHL headless storefront
 
-This storefront is built with TanStack Start, React 19, and Tailwind CSS v4. It runs as a fast, custom headless e-commerce store integrated with sub-account secrets.
+TanStack Start / React 19 storefront imported from the latest `mydiyhaven.zip`, then repaired locally. GHL remains the sole product, price, collection and inventory authority. No Supabase integration is required for the implemented features. **Customer payment is not yet implemented.** `/checkout` now reviews the cart and requests current prices/stock; it does not place an order or charge a card.
 
-## API Integration & Secrets Setup
+## Local development
 
-The following secrets are configured in this environment and used by server functions (`src/lib/ghl.server.ts` & `src/lib/ghl.functions.ts`):
+Node 22.22.1 and the existing shared Playwright installation were used. Dependencies are project-local; no sudo or system package changes were necessary.
 
-- `GHL_LOCATION_ID`: Sub-account identifier (`MSmQrVKlTBkzE6chWWis`).
-- `GHL_PIT`: Private Integration Token (PIT) Bearer token used for authenticated backend calls.
-
-> **Security Note:** Secrets are accessible only inside server execution boundaries (`createServerFn` / server routes via `process.env`). They are never bundled into client-side code.
-
-### Granted Scopes & Headless Storefront Architecture Assessment
-
-Your Private Integration Token (PIT) has been granted the following scope set:
-
-| Scope | Permission Key | Role in Storefront | Status / Assessment |
-|---|---|---|---|
-| **View Products** | `products.readonly` | Read live product catalog, titles, descriptions, media, variants | **Essential** — powers product grids, catalog search, and detail views |
-| **View Product Prices** | `products/prices.readonly` | Fetch prices, currencies, recurring/one-time pricing | **Essential** — required to display live, accurate pricing |
-| **View Product Collections** | `products/collection.readonly` | Fetch collections / categories to build navigation, filters, badges | **Essential** — powers storefront collection tabs & category pages |
-| **View Store Settings** | `store/setting.readonly` | Fetch currency, store policies, tax rules, and general config | **Recommended** — ensures storefront rules match account config |
-| **View Shipping** | `store/shipping.readonly` | Calculate real shipping rates, zones, and methods | **Recommended** — provides dynamic shipping rates at checkout |
-| **View Payment Orders** | `payments/orders.readonly` | Read customer order status, order history, and receipts | **Essential** — powers order tracking and confirmation lookups |
-| **Edit Payment Orders** | `payments/orders.write` | Create pending orders / line items upon cart checkout | **Essential** — creates the order record before or after payment |
-| **Collect Payment for Orders** | `payments/orders.collectPayment` | Complete payments, trigger invoices, charge saved cards | **Essential** — allows direct order payment processing |
-| **View Payment Transactions** | `payments/transactions.readonly` | Verify successful transaction status and reference IDs | **Recommended** — post-checkout verification |
-| **View Payment Coupons** | `payments/coupons.readonly` | Validate promo codes and discount vouchers in the cart | **Bonus / Recommended** — enables coupon code input in cart/checkout |
-| **View Custom Payment Providers** | `payments/custom-provider.readonly` | Inspect connected gateway configuration | Optional / Informational |
-| **View Custom Payment Integrations** | `payments/integration.readonly` | Inspect connected integrations | Optional / Informational |
-
-### Additional Recommended Scopes for Growth:
-- `contacts.readonly` and `contacts.write`: To associate orders with contacts, capture customer profiles, and trigger post-purchase nurture automations.
-
----
-
-## Diagnostic Tooling
-
-The storefront ships with read-only diagnostic tooling so agents and admins can verify the headless e-commerce connection without touching the UI.
-
-### Diagnostics page
-- **`/store-diagnostics`** — A noindex page rendering a live JSON-style health report.
-  - File: `src/routes/store-diagnostics.tsx`
-  - Reports: secret presence (without leaking values), catalog live/fallback status, product & collection counts, priced-product count, variant count, a sample product, and a live promo-code validation probe.
-  - Click "Refresh" to re-run; data is fetched fresh each time (`staleTime: 0`).
-
-### Server function (for programmatic / UI use)
-- **`getStoreDiagnostics()`** — `src/lib/diagnostics.functions.ts` — same report via TanStack RPC, callable from any component with `useServerFn`.
-- Helper: `src/lib/diagnostics.server.ts` (`runDiagnostics()`).
-
-### Catalog status (lightweight)
-- **`getCatalogStatus()`** — `src/lib/ghl.functions.ts` — returns `{ live, error, productCount, collectionCount }` only. Cheaper than the full diagnostics report.
-
-### Demo promo codes (fallback)
-When the live coupons endpoint is unavailable, these codes validate locally:
-`HAVEN10` (10% off), `WELCOME15` (15% off + free shipping), `FREESHIP` (free shipping), `CRAFT25` ($25 off).
-
----
-
-## Cart & Checkout Persistence
-
-The cart and applied promo code persist across sessions via cookies:
-
-- **`mdh_cart`** — serialized cart state (products, variants, quantities). 1-year expiry.
-- **`mdh_promo`** — applied promo code. Cleared on order completion.
-- Helpers: `src/lib/cookies.ts` (browser-safe read/write/delete, JSON variants).
-- Providers restore from cookies on mount (post-hydration) and persist on every change.
-
-Cookies are `SameSite=Lax`, `path=/`, and deleted when the cart/promo is emptied.
-
-### Checkout flow & payment capture
-1. Cart drawer (`/`) → promo validation → "Proceed to checkout".
-2. `/checkout` — contact, shipping, and card payment form; live order summary calculations.
-3. `placeStoreOrder` server function creates the order in the e-commerce system (`POST /payments/orders`).
-4. Using the granted `payments/orders.collectPayment` scope, payment is immediately recorded via `POST /payments/orders/:orderId/record-payment` with card brand, last 4 digits, and full order amount, marking the order status as Paid.
-5. On success: cart + promo cookies are cleared, and customer is redirected to `/order-confirmation?orderId=…`.
-6. On order failure: error toast is shown and cart is preserved for retry.
-
----
-
-## Storefront Routes & Features
-
-- `/` — Homepage with Hero, Trust badges, Collection spotlight, and Story.
-- `/products` — Full Catalog with Search, Category Pills, and Price/Rating Sorting.
-- `/products/$slug` — Individual Product Detail Page with image gallery, quantity selector, badges, and related items.
-- `/collections` — Collections Directory displaying curated series (Tableware, Textiles, Decor, Kitchen).
-- `/collections/$slug` — Dedicated Collection Page with filtered products.
-- `/checkout` — Headless order checkout flow connecting to server order creation.
-- `/order-confirmation` — Order confirmation page displaying unique order reference IDs.
-- `/store-diagnostics` — Read-only health report for the e-commerce integration (noindex).
-
-## Development
-
-```sh
-bun install
-bun run dev
+```bash
+npm ci --ignore-scripts
+npm run dev:local
+npm run typecheck
+npm test
+npm run build
+/opt/playwright-python/bin/python tests/browser-smoke.py
 ```
+
+The browser script expects the local server on port 4317. `npm run dev:local` loads the existing `.env.local`. Set `GHL_LOCATION_ID` and `GHL_PIT` in the deployment's server-side secret settings. Never use a `VITE_` prefix for these values. `.env.local` and all `.env.*` files except `.env.example` are ignored. Do not paste credentials into source, screenshots, logs or diagnostic output. The browser only calls server functions; GHL authorization stays on the server.
+
+The original export includes `bun.lock`; `package-lock.json` records the npm dependency resolution verified here. Use npm locally. Recheck the build in AI Studio's own runtime after transferring files.
+
+## PIT scopes
+
+Transcribed from `my-diy-haven-ghl-pit-scope.png` supplied in Downloads. This is evidence of the selected scopes; successful read probes independently verify the catalog/inventory/coupon access used below. No write permission was tested by creating or changing business records.
+
+| Selected scope | Purpose / endpoint family | Current use |
+| --- | --- | --- |
+| `products.readonly` | Read products, including collection-filtered product lists: `GET /products/` | Verified and used |
+| `products/prices.readonly` | Read product price records and inventory: `GET /products/:productId/price`, `GET /products/inventory` | Both verified; runtime uses price stock fields |
+| `products/collection.readonly` | Read collections: `GET /products/collections` | Verified and used |
+| `store/setting.readonly` | Read store settings | Selected; not yet integrated/tested |
+| `store/shipping.readonly` | Read store shipping configuration | Selected; not yet integrated/tested |
+| `payments/orders.write` | Order write permissions exposed by GHL | Selected; unused; not proof of a supported create-checkout endpoint |
+| `payments/orders.readonly` | Read orders: `/payments/orders` | Selected; unused |
+| `payments/orders.collectPayment` | Record a manual payment: `POST /payments/orders/:orderId/record-payment` | Selected; deliberately unused; does not tokenize or charge a customer's card |
+| `payments/transactions.readonly` | Read payment transactions | Selected; unused |
+| `payments/coupons.readonly` | Read coupons: `GET /payments/coupon/list` | Verified; no coupons configured at inspection |
+| `payments/custom-provider.readonly` | Read custom payment provider configuration | Selected; unused; not provider registration/charging permission |
+| `payments/integration.readonly` | Read payment integration configuration | Selected; unused |
+
+No additional scopes are needed for the catalog/cart fixes. Contacts and invoice scopes are **not shown**; an invoice-based payment design would require confirming those permissions and the workflow before implementation.
+
+## Verified repairs
+
+On September 8, 2026 (America/Chicago), read-only integration checks loaded **177 priced products, 3,268 real price variants, 144 unavailable variants, and 13 named collections**. Two upstream Default collections are excluded. Counts can change in GHL.
+
+- Prices come from each product's `/price` endpoint, not `/payments/prices`. The observed USD amounts are dollars (9 means $9); no magnitude-based conversion or manual override is used. `hasPrices:false` is not a reliable availability flag in this imported catalog.
+- Variant identifiers are actual price IDs. Labels map option IDs to option names. Product cards show the lowest available variant price. Stock follows `trackInventory`, `availableQuantity` and `allowOutOfStockPurchases`.
+- Imported products omitted collection membership. Collection-filtered product reads supply membership and counts without modifying GHL.
+- Pagination, bounded read concurrency, retry on throttling/server errors, and a five-minute warm-process cache reduce repeated API work. No demo catalog silently replaces a failed connection.
+- Cart cookies contain only product ID, price ID and quantity, with 30-day expiry, SameSite=Lax and Secure on HTTPS. They are limited to 20 lines and 3,500 encoded bytes. Old export cookies are not migrated. Restoration resolves current catalog data and clamps stock. Failed restoration preserves the saved cookie for retry.
+- Quotes reread price/stock records and calculate the subtotal on the server. Client prices are never authoritative. Quotes do not reserve inventory, calculate taxes/shipping, redeem coupons, or create orders.
+- Removed fake payment confirmation, fabricated discount acceptance, unsupported shipping amounts/free-shipping thresholds, and invented review ratings. Mounted toast UI and fixed React deduplication/query hydration.
+
+## Diagnostics and next steps
+
+`/store-diagnostics` exposes public catalog counts and checkout status, with noindex metadata. Python scripts under `scripts/` perform read-only API probes without displaying the credentials. Do not expand these into public order/customer-data endpoints.
+
+See [assessment](docs/ASSESSMENT.md), [testing plan](docs/TEST-PLAN.md), and [AI Studio transfer notes](docs/AI-STUDIO-TRANSFER.md). This is a working catalog/cart development build, **not a launch-ready paid checkout**.

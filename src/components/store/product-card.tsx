@@ -15,7 +15,7 @@ export function ProductCard({ product }: { product: StoreProduct }) {
   const quickVariant = product.variants.find((v) => v.available);
   const hasPrice = priceAvailable(product);
   const dp = displayPrice(product);
-  const soldOut = !product.inStock && product.variants.length > 0 && !quickVariant;
+  const soldOut = !product.inStock;
   // When a product has multiple option combos, require selection on the PDP.
   const needsSelection = product.variants.length > 1;
 
@@ -50,11 +50,13 @@ export function ProductCard({ product }: { product: StoreProduct }) {
       </Link>
 
       <div className="flex flex-1 flex-col p-4">
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <Star className="h-3 w-3 fill-amber text-amber" />
-          <span className="font-medium text-foreground">{product.rating}</span>
-          {product.reviews > 0 && <span>· {product.reviews} reviews</span>}
-        </div>
+        {product.reviews > 0 && (
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Star className="h-3 w-3 fill-amber text-amber" />
+            <span className="font-medium text-foreground">{product.rating}</span>
+            {product.reviews > 0 && <span>· {product.reviews} reviews</span>}
+          </div>
+        )}
 
         <Link to="/products/$slug" params={{ slug: product.slug }} className="mt-2">
           <h3 className="font-display text-base font-semibold leading-tight text-foreground transition-colors group-hover:text-primary">
@@ -87,7 +89,7 @@ export function ProductCard({ product }: { product: StoreProduct }) {
             size="icon"
             disabled={soldOut || !hasPrice || needsSelection}
             onClick={() => {
-              add(product, quickVariant);
+              if (!add(product, quickVariant)) return;
               setOpen(true);
               toast.success(
                 `${product.name}${quickVariant ? ` (${quickVariant.label})` : ""} added to cart`,

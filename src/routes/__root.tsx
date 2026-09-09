@@ -17,6 +17,7 @@ import { PromoProvider } from "../lib/promo-context";
 import { Header } from "../components/store/header";
 import { Footer } from "../components/store/footer";
 import { CartDrawer } from "../components/store/cart-drawer";
+import { Toaster } from "@/components/ui/sonner";
 import { BRAND_NAME } from "@/lib/brand";
 
 function NotFoundComponent() {
@@ -150,6 +151,7 @@ function RootComponent() {
               <Footer />
             </div>
             <CartDrawer />
+            <Toaster />
           </PromoProvider>
         </CartUIProvider>
       </CartProvider>
