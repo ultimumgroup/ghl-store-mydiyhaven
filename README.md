@@ -28,8 +28,8 @@ Transcribed from `my-diy-haven-ghl-pit-scope.png` supplied in Downloads. This is
 | `products.readonly` | Read products, including collection-filtered product lists: `GET /products/` | Verified and used |
 | `products/prices.readonly` | Read product price records and inventory: `GET /products/:productId/price`, `GET /products/inventory` | Both verified; runtime uses price stock fields |
 | `products/collection.readonly` | Read collections: `GET /products/collections` | Verified and used |
-| `store/setting.readonly` | Read store settings | Selected; not yet integrated/tested |
-| `store/shipping.readonly` | Read store shipping configuration | Selected; not yet integrated/tested |
+| `store/setting.readonly` | Read store settings | Selected; read probe verified, not yet integrated |
+| `store/shipping.readonly` | Read store shipping configuration | Selected; read probe verified, not yet integrated |
 | `payments/orders.write` | Order write permissions exposed by GHL | Selected; unused; not proof of a supported create-checkout endpoint |
 | `payments/orders.readonly` | Read orders: `/payments/orders` | Selected; unused |
 | `payments/orders.collectPayment` | Record a manual payment: `POST /payments/orders/:orderId/record-payment` | Selected; deliberately unused; does not tokenize or charge a customer's card |
@@ -51,6 +51,10 @@ On September 8, 2026 (America/Chicago), read-only integration checks loaded **17
 - Cart cookies contain only product ID, price ID and quantity, with 30-day expiry, SameSite=Lax and Secure on HTTPS. They are limited to 20 lines and 3,500 encoded bytes. Old export cookies are not migrated. Restoration resolves current catalog data and clamps stock. Failed restoration preserves the saved cookie for retry.
 - Quotes reread price/stock records and calculate the subtotal on the server. Client prices are never authoritative. Quotes do not reserve inventory, calculate taxes/shipping, redeem coupons, or create orders.
 - Removed fake payment confirmation, fabricated discount acceptance, unsupported shipping amounts/free-shipping thresholds, and invented review ratings. Mounted toast UI and fixed React deduplication/query hydration.
+
+## Checkout follow-up
+
+The local v3 Toolkit audit found a stronger candidate: `POST /invoices/text2pay` can stage product/price/quantity lines and returns `invoiceUrl`. Read [checkout options](docs/CHECKOUT-OPTIONS.md) for the draft/manual-publication experiment, abandoned-cart storage choices and Stripe fallback. Invoice permissions are missing; payability, inventory and native order behavior remain unverified. New v3 GET probes succeeded for store settings and shipping, but this location returned **zero shipping zones**.
 
 ## Diagnostics and next steps
 

@@ -2,6 +2,8 @@
 
 September 8, 2026. Evidence: downloaded source, the supplied scope screenshot, live GET requests using the existing local integration, official API documentation, local contract tests and browser checks. No orders, contacts, payments, inventory or other business records were written.
 
+> Follow-up: the local v3 Toolkit audit found `POST /invoices/text2pay` with a returned `invoiceUrl` and draft/update support. See [checkout options and experiment](CHECKOUT-OPTIONS.md); it supersedes the ordering of payment investigation below. Payment remains disabled pending validation.
+
 ## Decision
 
 Keep GHL as the ground truth and continue with this storefront before extracting an `ultimum-store-starter`. Products, variants, stock display, collections and a persistent anonymous cart work without another database. A GHL-only paid store remains a reasonable direction, but the exact supported payment handoff is unresolved. Adding Supabase would not turn a manual payment-recording endpoint into a payment processor.

@@ -1,0 +1,34 @@
+{
+  "requestVersion": "v3",
+  "mode": "GET-only",
+  "probes": {
+    "storeSettings": {
+      "httpStatus": 200,
+      "shippingOriginHasCountry": true
+    },
+    "shippingZones": {
+      "httpStatus": 200,
+      "zoneCount": 0,
+      "rateCount": 0,
+      "carrierRateCount": 0
+    },
+    "invoiceSettings": {
+      "httpStatus": 401
+    },
+    "whiteLabelProviders": {
+      "httpStatus": 200,
+      "providerCount": 0
+    },
+    "customProvider": {
+      "httpStatus": 200
+    },
+    "products": {
+      "httpStatus": 200
+    },
+    "samplePrices": {
+      "httpStatus": 200,
+      "samplePriceCount": 4,
+      "stripeStyleReferencesInSampleProductAndPrices": 0
+    }
+  }
+}

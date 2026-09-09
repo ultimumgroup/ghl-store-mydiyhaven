@@ -1,0 +1,1824 @@
+{
+  "source": "/home/jerrod/repos/ultimum-ghl-master-toolkit/api-docs/_meta/endpoints.json",
+  "snapshotGenerated": "2026-07-20",
+  "endpointCount": 630,
+  "webhookCount": 79,
+  "orderCollectionCreateEndpoints": [],
+  "checkoutCartPaymentLinkPathMatches": [],
+  "candidateEndpoints": [
+    {
+      "title": "Upsert Contact",
+      "method": "POST",
+      "path": "/contacts/upsert",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/contacts",
+      "scopes": [
+        "contacts.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/contacts/upsert-contact.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/contacts/upsert-contact"
+    },
+    {
+      "title": "Manage Auto payment for an schedule invoice",
+      "method": "POST",
+      "path": "/invoices/schedule/:scheduleId/auto-payment",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices/schedule.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/auto-payment-invoice-schedule.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/auto-payment-invoice-schedule"
+    },
+    {
+      "title": "Cancel an scheduled invoice",
+      "method": "POST",
+      "path": "/invoices/schedule/:scheduleId/cancel",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices/schedule.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/cancel-invoice-schedule.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/cancel-invoice-schedule"
+    },
+    {
+      "title": "Create Estimate Template",
+      "method": "POST",
+      "path": "/invoices/estimate/template",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices/estimate.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/create-estimate-template.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/create-estimate-template"
+    },
+    {
+      "title": "Create Invoice from Estimate",
+      "method": "POST",
+      "path": "/invoices/estimate/:estimateId/invoice",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices/estimate.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/create-invoice-from-estimate.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/create-invoice-from-estimate"
+    },
+    {
+      "title": "Create Invoice Schedule",
+      "method": "POST",
+      "path": "/invoices/schedule",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices/schedule.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/create-invoice-schedule.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/create-invoice-schedule"
+    },
+    {
+      "title": "Create template",
+      "method": "POST",
+      "path": "/invoices/template",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [],
+      "auth_methods": [],
+      "token_types": [],
+      "source_file": "ghl/invoices/create-invoice-template.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/create-invoice-template"
+    },
+    {
+      "title": "Create Invoice",
+      "method": "POST",
+      "path": "/invoices/",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/create-invoice.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/create-invoice"
+    },
+    {
+      "title": "Create New Estimate",
+      "method": "POST",
+      "path": "/invoices/estimate",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [],
+      "auth_methods": [],
+      "token_types": [],
+      "source_file": "ghl/invoices/create-new-estimate.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/create-new-estimate"
+    },
+    {
+      "title": "Delete Estimate Template",
+      "method": "DELETE",
+      "path": "/invoices/estimate/template/:templateId",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices/estimate.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/delete-estimate-template.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/delete-estimate-template"
+    },
+    {
+      "title": "Delete Estimate",
+      "method": "DELETE",
+      "path": "/invoices/estimate/:estimateId",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices/estimate.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/delete-estimate.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/delete-estimate"
+    },
+    {
+      "title": "Delete schedule",
+      "method": "DELETE",
+      "path": "/invoices/schedule/:scheduleId",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices/schedule.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/delete-invoice-schedule.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/delete-invoice-schedule"
+    },
+    {
+      "title": "Delete template",
+      "method": "DELETE",
+      "path": "/invoices/template/:templateId",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices/template.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/delete-invoice-template.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/delete-invoice-template"
+    },
+    {
+      "title": "Delete invoice",
+      "method": "DELETE",
+      "path": "/invoices/:invoiceId",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/delete-invoice.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/delete-invoice"
+    },
+    {
+      "title": "Generate Estimate Number",
+      "method": "GET",
+      "path": "/invoices/estimate/number/generate",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices/estimate.readonly"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/generate-estimate-number.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/generate-estimate-number"
+    },
+    {
+      "title": "Generate Invoice Number",
+      "method": "GET",
+      "path": "/invoices/generate-invoice-number",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices.readonly"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/generate-invoice-number.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/generate-invoice-number"
+    },
+    {
+      "title": "Get an schedule",
+      "method": "GET",
+      "path": "/invoices/schedule/:scheduleId",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices/schedule.readonly"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/get-invoice-schedule.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/get-invoice-schedule"
+    },
+    {
+      "title": "Get Invoice Settings",
+      "method": "GET",
+      "path": "/invoices/settings",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices.readonly"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/get-invoice-settings.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/get-invoice-settings"
+    },
+    {
+      "title": "Get an template",
+      "method": "GET",
+      "path": "/invoices/template/:templateId",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices/template.readonly"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/get-invoice-template.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/get-invoice-template"
+    },
+    {
+      "title": "Get invoice",
+      "method": "GET",
+      "path": "/invoices/:invoiceId",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices.readonly"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/get-invoice.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/get-invoice"
+    },
+    {
+      "title": "List Estimate Templates",
+      "method": "GET",
+      "path": "/invoices/estimate/template",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices/estimate.readonly"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/list-estimate-templates.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/list-estimate-templates"
+    },
+    {
+      "title": "List Estimates",
+      "method": "GET",
+      "path": "/invoices/estimate/list",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices/estimate.readonly"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/list-estimates.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/list-estimates"
+    },
+    {
+      "title": "List schedules",
+      "method": "GET",
+      "path": "/invoices/schedule",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices/schedule.readonly"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/list-invoice-schedules.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/list-invoice-schedules"
+    },
+    {
+      "title": "List templates",
+      "method": "GET",
+      "path": "/invoices/template",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices/template.readonly"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/list-invoice-templates.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/list-invoice-templates"
+    },
+    {
+      "title": "List invoices",
+      "method": "GET",
+      "path": "/invoices/",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices.readonly"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/list-invoices.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/list-invoices"
+    },
+    {
+      "title": "Preview Estimate Template",
+      "method": "GET",
+      "path": "/invoices/estimate/template/preview",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices/estimate.readonly"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/preview-estimate-template.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/preview-estimate-template"
+    },
+    {
+      "title": "Record a manual payment for an invoice",
+      "method": "POST",
+      "path": "/invoices/:invoiceId/record-payment",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/record-invoice.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/record-invoice"
+    },
+    {
+      "title": "Schedule an schedule invoice",
+      "method": "POST",
+      "path": "/invoices/schedule/:scheduleId/schedule",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices/schedule.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/schedule-invoice-schedule.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/schedule-invoice-schedule"
+    },
+    {
+      "title": "Send Estimate",
+      "method": "POST",
+      "path": "/invoices/estimate/:estimateId/send",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices/estimate.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/send-estimate.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/send-estimate"
+    },
+    {
+      "title": "Send invoice",
+      "method": "POST",
+      "path": "/invoices/:invoiceId/send",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/send-invoice.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/send-invoice"
+    },
+    {
+      "title": "Create & Send",
+      "method": "POST",
+      "path": "/invoices/text2pay",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/invoices/text-2-pay-invoice.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/text-2-pay-invoice"
+    },
+    {
+      "title": "Update scheduled recurring invoice",
+      "method": "POST",
+      "path": "/invoices/schedule/:scheduleId/updateAndSchedule",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices/schedule.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/update-and-schedule-invoice-schedule.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/update-and-schedule-invoice-schedule"
+    },
+    {
+      "title": "Update estimate last visited at",
+      "method": "PATCH",
+      "path": "/invoices/estimate/stats/last-visited-at",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/update-estimate-last-visited-at.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/update-estimate-last-visited-at"
+    },
+    {
+      "title": "Update Estimate Template",
+      "method": "PUT",
+      "path": "/invoices/estimate/template/:templateId",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices/estimate.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/update-estimate-template.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/update-estimate-template"
+    },
+    {
+      "title": "Update Estimate",
+      "method": "PUT",
+      "path": "/invoices/estimate/:estimateId",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [],
+      "auth_methods": [],
+      "token_types": [],
+      "source_file": "ghl/invoices/update-estimate.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/update-estimate"
+    },
+    {
+      "title": "Update invoice last visited at",
+      "method": "PATCH",
+      "path": "/invoices/stats/last-visited-at",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/update-invoice-last-visited-at.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/update-invoice-last-visited-at"
+    },
+    {
+      "title": "Update invoice late fees configuration",
+      "method": "PATCH",
+      "path": "/invoices/:invoiceId/late-fees-configuration",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/update-invoice-late-fees-configuration.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/update-invoice-late-fees-configuration"
+    },
+    {
+      "title": "Update template late fees configuration",
+      "method": "PATCH",
+      "path": "/invoices/template/:templateId/payment-methods-configuration",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/update-invoice-payment-methods-configuration.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/update-invoice-payment-methods-configuration"
+    },
+    {
+      "title": "Update schedule",
+      "method": "PUT",
+      "path": "/invoices/schedule/:scheduleId",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices/schedule.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/update-invoice-schedule.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/update-invoice-schedule"
+    },
+    {
+      "title": "Update template late fees configuration",
+      "method": "PATCH",
+      "path": "/invoices/template/:templateId/late-fees-configuration",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/update-invoice-template-late-fees-configuration.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/update-invoice-template-late-fees-configuration"
+    },
+    {
+      "title": "Update template",
+      "method": "PUT",
+      "path": "/invoices/template/:templateId",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices/template.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/update-invoice-template.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/update-invoice-template"
+    },
+    {
+      "title": "Update invoice",
+      "method": "PUT",
+      "path": "/invoices/:invoiceId",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/update-invoice.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/update-invoice"
+    },
+    {
+      "title": "Void invoice",
+      "method": "POST",
+      "path": "/invoices/:invoiceId/void",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/invoices",
+      "scopes": [
+        "invoices.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token",
+        "Agency Token"
+      ],
+      "source_file": "ghl/invoices/void-invoice.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/invoices/void-invoice"
+    },
+    {
+      "title": "Create Custom Object",
+      "method": "POST",
+      "path": "/objects/",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/objects",
+      "scopes": [
+        "objects/schema.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Agency Token"
+      ],
+      "source_file": "ghl/objects/create-custom-object-schema.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/objects/create-custom-object-schema"
+    },
+    {
+      "title": "Create Record",
+      "method": "POST",
+      "path": "/objects/:schemaKey/records",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/objects",
+      "scopes": [
+        "objects/record.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/objects/create-object-record.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/objects/create-object-record"
+    },
+    {
+      "title": "Delete Record",
+      "method": "DELETE",
+      "path": "/objects/:schemaKey/records/:id",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/objects",
+      "scopes": [],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/objects/delete-object-record.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/objects/delete-object-record"
+    },
+    {
+      "title": "Get all objects for a location",
+      "method": "GET",
+      "path": "/objects/",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/objects",
+      "scopes": [
+        "objects/schema.readonly"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/objects/get-object-by-location-id.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/objects/get-object-by-location-id"
+    },
+    {
+      "title": "Get Object Schema by key / id",
+      "method": "GET",
+      "path": "/objects/:key",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/objects",
+      "scopes": [
+        "objects/schema.readonly"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/objects/get-object-schema-by-key.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/objects/get-object-schema-by-key"
+    },
+    {
+      "title": "Get Record By Id",
+      "method": "GET",
+      "path": "/objects/:schemaKey/records/:id",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/objects",
+      "scopes": [],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/objects/get-record-by-id.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/objects/get-record-by-id"
+    },
+    {
+      "title": "Search Object Records",
+      "method": "POST",
+      "path": "/objects/:schemaKey/records/search",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/objects",
+      "scopes": [
+        "objects/record.readonly"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/objects/search-object-records.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/objects/search-object-records"
+    },
+    {
+      "title": "Update Object Schema By Key / Id",
+      "method": "PUT",
+      "path": "/objects/:key",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/objects",
+      "scopes": [
+        "objects/schema.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/objects/update-custom-object.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/objects/update-custom-object"
+    },
+    {
+      "title": "Update Record",
+      "method": "PUT",
+      "path": "/objects/:schemaKey/records/:id",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/objects",
+      "scopes": [],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/objects/update-object-record.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/objects/update-object-record"
+    },
+    {
+      "title": "Upsert Opportunity",
+      "method": "POST",
+      "path": "/opportunities/upsert",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/opportunities",
+      "scopes": [
+        "opportunities.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/opportunities/upsert-opportunity.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/opportunities/upsert-opportunity"
+    },
+    {
+      "title": "Create new provider config",
+      "method": "POST",
+      "path": "/payments/custom-provider/connect",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/payments",
+      "scopes": [
+        "payments/custom-provider.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/payments/create-config.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/payments/create-config"
+    },
+    {
+      "title": "Create Coupon",
+      "method": "POST",
+      "path": "/payments/coupon",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/payments",
+      "scopes": [
+        "payments/coupons.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/payments/create-coupon.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/payments/create-coupon"
+    },
+    {
+      "title": "Create White-label Integration Provider",
+      "method": "POST",
+      "path": "/payments/integrations/provider/whitelabel",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/payments",
+      "scopes": [
+        "payments/integration.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/payments/create-integration-provider.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/payments/create-integration-provider"
+    },
+    {
+      "title": "Create new integration",
+      "method": "POST",
+      "path": "/payments/custom-provider/provider",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/payments",
+      "scopes": [
+        "payments/custom-provider.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/payments/create-integration.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/payments/create-integration"
+    },
+    {
+      "title": "Create order fulfillment",
+      "method": "POST",
+      "path": "/payments/orders/:orderId/fulfillments",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/payments",
+      "scopes": [
+        "payments/orders.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/payments/create-order-fulfillment.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/payments/create-order-fulfillment"
+    },
+    {
+      "title": "Custom-provider marketplace app update capabilities",
+      "method": "PUT",
+      "path": "/payments/custom-provider/capabilities",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/payments",
+      "scopes": [
+        "payments/custom-provider.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/payments/custom-provider-marketplace-app-update-capabilities.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/payments/custom-provider-marketplace-app-update-capabilities"
+    },
+    {
+      "title": "Delete Coupon",
+      "method": "DELETE",
+      "path": "/payments/coupon",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/payments",
+      "scopes": [
+        "payments/coupons.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/payments/delete-coupon.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/payments/delete-coupon"
+    },
+    {
+      "title": "Deleting an existing integration",
+      "method": "DELETE",
+      "path": "/payments/custom-provider/provider",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/payments",
+      "scopes": [
+        "payments/custom-provider.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/payments/delete-integration.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/payments/delete-integration"
+    },
+    {
+      "title": "Disconnect existing provider config",
+      "method": "POST",
+      "path": "/payments/custom-provider/disconnect",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/payments",
+      "scopes": [
+        "payments/custom-provider.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/payments/disconnect-config.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/payments/disconnect-config"
+    },
+    {
+      "title": "Fetch given provider config",
+      "method": "GET",
+      "path": "/payments/custom-provider/connect",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/payments",
+      "scopes": [
+        "payments/custom-provider.readonly"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/payments/fetch-config.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/payments/fetch-config"
+    },
+    {
+      "title": "Fetch Coupon",
+      "method": "GET",
+      "path": "/payments/coupon",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/payments",
+      "scopes": [
+        "payments/coupons.readonly"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/payments/get-coupon.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/payments/get-coupon"
+    },
+    {
+      "title": "Get Order by ID",
+      "method": "GET",
+      "path": "/payments/orders/:orderId",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/payments",
+      "scopes": [
+        "payments/orders.readonly"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/payments/get-order-by-id.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/payments/get-order-by-id"
+    },
+    {
+      "title": "Get Subscription by ID",
+      "method": "GET",
+      "path": "/payments/subscriptions/:subscriptionId",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/payments",
+      "scopes": [
+        "payments/subscriptions.readonly"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/payments/get-subscription-by-id.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/payments/get-subscription-by-id"
+    },
+    {
+      "title": "Get Transaction by ID",
+      "method": "GET",
+      "path": "/payments/transactions/:transactionId",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/payments",
+      "scopes": [
+        "payments/transactions.readonly"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/payments/get-transaction-by-id.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/payments/get-transaction-by-id"
+    },
+    {
+      "title": "List Coupons",
+      "method": "GET",
+      "path": "/payments/coupon/list",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/payments",
+      "scopes": [
+        "payments/coupons.readonly"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/payments/list-coupons.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/payments/list-coupons"
+    },
+    {
+      "title": "List White-label Integration Providers",
+      "method": "GET",
+      "path": "/payments/integrations/provider/whitelabel",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/payments",
+      "scopes": [
+        "payments/integration.readonly"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/payments/list-integration-providers.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/payments/list-integration-providers"
+    },
+    {
+      "title": "List fulfillment",
+      "method": "GET",
+      "path": "/payments/orders/:orderId/fulfillments",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/payments",
+      "scopes": [
+        "payments/orders.readonly"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/payments/list-order-fulfillment.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/payments/list-order-fulfillment"
+    },
+    {
+      "title": "List Order Notes",
+      "method": "GET",
+      "path": "/payments/orders/:orderId/notes",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/payments",
+      "scopes": [],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/payments/list-order-notes.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/payments/list-order-notes"
+    },
+    {
+      "title": "List Orders",
+      "method": "GET",
+      "path": "/payments/orders",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/payments",
+      "scopes": [
+        "payments/orders.readonly"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/payments/list-orders.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/payments/list-orders"
+    },
+    {
+      "title": "List Subscriptions",
+      "method": "GET",
+      "path": "/payments/subscriptions",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/payments",
+      "scopes": [
+        "payments/subscriptions.readonly"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/payments/list-subscriptions.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/payments/list-subscriptions"
+    },
+    {
+      "title": "List Transactions",
+      "method": "GET",
+      "path": "/payments/transactions",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/payments",
+      "scopes": [
+        "payments/transactions.readonly"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/payments/list-transactions.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/payments/list-transactions"
+    },
+    {
+      "title": "Record Order Payment",
+      "method": "POST",
+      "path": "/payments/orders/:orderId/record-payment",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/payments",
+      "scopes": [
+        "payments/orders.collectPayment"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/payments/record-order-payment.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/payments/record-order-payment"
+    },
+    {
+      "title": "Update Coupon",
+      "method": "PUT",
+      "path": "/payments/coupon",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/payments",
+      "scopes": [
+        "payments/coupons.write"
+      ],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/payments/update-coupon.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/payments/update-coupon"
+    },
+    {
+      "title": "Create Shipping Carrier",
+      "method": "POST",
+      "path": "/store/shipping-carrier",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/store",
+      "scopes": [],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/store/create-shipping-carrier.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/store/create-shipping-carrier"
+    },
+    {
+      "title": "Create Shipping Rate",
+      "method": "POST",
+      "path": "/store/shipping-zone/:shippingZoneId/shipping-rate",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/store",
+      "scopes": [],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/store/create-shipping-rate.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/store/create-shipping-rate"
+    },
+    {
+      "title": "Create Shipping Zone",
+      "method": "POST",
+      "path": "/store/shipping-zone",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/store",
+      "scopes": [],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/store/create-shipping-zone.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/store/create-shipping-zone"
+    },
+    {
+      "title": "Create/Update Store Settings",
+      "method": "POST",
+      "path": "/store/store-setting",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/store",
+      "scopes": [],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/store/create-store-setting.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/store/create-store-setting"
+    },
+    {
+      "title": "Delete shipping carrier",
+      "method": "DELETE",
+      "path": "/store/shipping-carrier/:shippingCarrierId",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/store",
+      "scopes": [],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/store/delete-shipping-carrier.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/store/delete-shipping-carrier"
+    },
+    {
+      "title": "Delete shipping rate",
+      "method": "DELETE",
+      "path": "/store/shipping-zone/:shippingZoneId/shipping-rate/:shippingRateId",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/store",
+      "scopes": [],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/store/delete-shipping-rate.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/store/delete-shipping-rate"
+    },
+    {
+      "title": "Delete shipping zone",
+      "method": "DELETE",
+      "path": "/store/shipping-zone/:shippingZoneId",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/store",
+      "scopes": [],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/store/delete-shipping-zone.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/store/delete-shipping-zone"
+    },
+    {
+      "title": "Get available shipping rates",
+      "method": "POST",
+      "path": "/store/shipping-zone/shipping-rates",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/store",
+      "scopes": [],
+      "auth_methods": [],
+      "token_types": [],
+      "source_file": "ghl/store/get-available-shipping-zones.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/store/get-available-shipping-zones"
+    },
+    {
+      "title": "Get Shipping Carrier",
+      "method": "GET",
+      "path": "/store/shipping-carrier/:shippingCarrierId",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/store",
+      "scopes": [],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/store/get-shipping-carriers.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/store/get-shipping-carriers"
+    },
+    {
+      "title": "Get Shipping Rate",
+      "method": "GET",
+      "path": "/store/shipping-zone/:shippingZoneId/shipping-rate/:shippingRateId",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/store",
+      "scopes": [],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/store/get-shipping-rates.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/store/get-shipping-rates"
+    },
+    {
+      "title": "Get Shipping Zone",
+      "method": "GET",
+      "path": "/store/shipping-zone/:shippingZoneId",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/store",
+      "scopes": [],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/store/get-shipping-zones.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/store/get-shipping-zones"
+    },
+    {
+      "title": "Get Store Settings",
+      "method": "GET",
+      "path": "/store/store-setting",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/store",
+      "scopes": [],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/store/get-store-settings.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/store/get-store-settings"
+    },
+    {
+      "title": "List Shipping Carriers",
+      "method": "GET",
+      "path": "/store/shipping-carrier",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/store",
+      "scopes": [],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/store/list-shipping-carriers.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/store/list-shipping-carriers"
+    },
+    {
+      "title": "List Shipping Rates",
+      "method": "GET",
+      "path": "/store/shipping-zone/:shippingZoneId/shipping-rate",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/store",
+      "scopes": [],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/store/list-shipping-rates.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/store/list-shipping-rates"
+    },
+    {
+      "title": "List Shipping Zones",
+      "method": "GET",
+      "path": "/store/shipping-zone",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/store",
+      "scopes": [],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/store/list-shipping-zones.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/store/list-shipping-zones"
+    },
+    {
+      "title": "Update Shipping Carrier",
+      "method": "PUT",
+      "path": "/store/shipping-carrier/:shippingCarrierId",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/store",
+      "scopes": [],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/store/update-shipping-carrier.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/store/update-shipping-carrier"
+    },
+    {
+      "title": "Update Shipping Rate",
+      "method": "PUT",
+      "path": "/store/shipping-zone/:shippingZoneId/shipping-rate/:shippingRateId",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/store",
+      "scopes": [],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/store/update-shipping-rate.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/store/update-shipping-rate"
+    },
+    {
+      "title": "Update Shipping Zone",
+      "method": "PUT",
+      "path": "/store/shipping-zone/:shippingZoneId",
+      "base_url": "https://services.leadconnectorhq.com",
+      "section": "ghl/store",
+      "scopes": [],
+      "auth_methods": [
+        "OAuth Access Token",
+        "Private Integration Token"
+      ],
+      "token_types": [
+        "Sub-Account Token"
+      ],
+      "source_file": "ghl/store/update-shipping-zone.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/ghl/store/update-shipping-zone"
+    }
+  ],
+  "invoiceAndOrderWebhooks": [
+    {
+      "name": "InvoiceCreate",
+      "title": "Invoice",
+      "description": "Called whenever an invoice is created",
+      "source_file": "webhook/InvoiceCreate.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/webhook/InvoiceCreate"
+    },
+    {
+      "name": "InvoiceDelete",
+      "title": "Invoice",
+      "description": "Called whenever an invoice is deleted",
+      "source_file": "webhook/InvoiceDelete.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/webhook/InvoiceDelete"
+    },
+    {
+      "name": "InvoicePaid",
+      "title": "Invoice",
+      "description": "Called whenever an invoice is paid",
+      "source_file": "webhook/InvoicePaid.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/webhook/InvoicePaid"
+    },
+    {
+      "name": "InvoicePartiallyPaid",
+      "title": "Invoice",
+      "description": "Called whenever an invoice is partially paid",
+      "source_file": "webhook/InvoicePartiallyPaid.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/webhook/InvoicePartiallyPaid"
+    },
+    {
+      "name": "InvoiceSent",
+      "title": "Invoice",
+      "description": "Called whenever an invoice is sent",
+      "source_file": "webhook/InvoiceSent.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/webhook/InvoiceSent"
+    },
+    {
+      "name": "InvoiceUpdate",
+      "title": "Invoice",
+      "description": "Called whenever an invoice is updated",
+      "source_file": "webhook/InvoiceUpdate.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/webhook/InvoiceUpdate"
+    },
+    {
+      "name": "InvoiceVoid",
+      "title": "Invoice",
+      "description": "Called whenever an invoice is marked as void",
+      "source_file": "webhook/InvoiceVoid.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/webhook/InvoiceVoid"
+    },
+    {
+      "name": "OrderCreate",
+      "title": "Order",
+      "description": "Called whenever an order is created",
+      "source_file": "webhook/OrderCreate.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/webhook/OrderCreate"
+    },
+    {
+      "name": "OrderStatusUpdate",
+      "title": "Order",
+      "description": "Called whenever an order's status field updated",
+      "source_file": "webhook/OrderStatusUpdate.md",
+      "source_url": "https://marketplace.gohighlevel.com/docs/webhook/OrderStatusUpdate"
+    }
+  ],
+  "limits": [
+    "Snapshot evidence, not a claim about undocumented/internal routes or later releases.",
+    "Missing scopes in the catalog are unknown, not scope-free endpoints.",
+    "SaaS generate-payment-link filenames resolve to subscription update endpoints in this snapshot."
+  ]
+}

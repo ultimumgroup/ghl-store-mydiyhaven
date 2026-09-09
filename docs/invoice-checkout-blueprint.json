@@ -1,0 +1,76 @@
+{
+  "purpose": "Offline review fixture only; no executable network operation.",
+  "versionHeader": "v3",
+  "unverifiedGates": [
+    "Confirm invoice amount units with a known $9 item.",
+    "Confirm invoiceUrl is public and payable after manual publication.",
+    "Confirm draft/manual publication triggers no customer messages in the isolated test configuration.",
+    "Confirm inventory and native order semantics after test payment."
+  ],
+  "draft": {
+    "method": "POST",
+    "path": "/invoices/text2pay",
+    "body": {
+      "altId": "CONFIGURED_LOCATION_ID",
+      "altType": "location",
+      "name": "My DIY Haven checkout TEST-CART-001 revision 1",
+      "currency": "USD",
+      "items": [
+        {
+          "name": "Fixture pen blank \u2014 selected option",
+          "productId": "VERIFIED_GHL_PRODUCT_ID",
+          "priceId": "VERIFIED_GHL_PRICE_ID",
+          "currency": "USD",
+          "amount": 9,
+          "qty": 2,
+          "type": "one_time"
+        }
+      ],
+      "contactDetails": {
+        "id": "CONTROLLED_TEST_CONTACT_ID",
+        "name": "Controlled Test Customer",
+        "phoneNo": "CONTROLLED_TEST_PHONE",
+        "email": "CONTROLLED_TEST_EMAIL"
+      },
+      "issueDate": "YYYY-MM-DD",
+      "sentTo": {
+        "email": [
+          "CONTROLLED_TEST_EMAIL"
+        ]
+      },
+      "liveMode": false,
+      "action": "draft",
+      "userId": "AUTHORIZED_GHL_USER_ID",
+      "businessDetails": {
+        "name": "My DIY Haven"
+      },
+      "discount": {
+        "type": "percentage",
+        "value": 0
+      }
+    }
+  },
+  "manualPublicationIfDraftNotPayable": {
+    "method": "POST",
+    "path": "/invoices/RETURNED_INVOICE_ID/send",
+    "body": {
+      "altId": "CONFIGURED_LOCATION_ID",
+      "altType": "location",
+      "userId": "AUTHORIZED_GHL_USER_ID",
+      "action": "send_manually",
+      "liveMode": false,
+      "autoPayment": {
+        "enable": false
+      }
+    }
+  },
+  "statusRead": {
+    "method": "GET",
+    "path": "/invoices/RETURNED_INVOICE_ID",
+    "query": {
+      "altId": "CONFIGURED_LOCATION_ID",
+      "altType": "location"
+    }
+  },
+  "important": "Placeholder IDs and test customer details must be configured deliberately. No email/SMS send action or automatic charge is included. Do not run this fixture against production."
+}
