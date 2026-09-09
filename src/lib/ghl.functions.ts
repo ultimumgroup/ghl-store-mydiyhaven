@@ -1,6 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import {
   fetchCatalogServer,
+  fetchCollectionsServer,
+  fetchCollectionServer,
+  fetchFeaturedServer,
+  fetchCartProductsServer,
   fetchProductServer,
   validatePromoCodeServer,
   createGHLOrderServer,
@@ -26,3 +30,17 @@ export const quoteCart = createServerFn({ method: "POST" })
 export const placeStoreOrder = createServerFn({ method: "POST" }).handler(async () =>
   createGHLOrderServer(undefined),
 );
+
+export const getCollections = createServerFn({ method: "GET" }).handler(async () =>
+  fetchCollectionsServer(),
+);
+export const getFeatured = createServerFn({ method: "GET" }).handler(async () =>
+  fetchFeaturedServer(),
+);
+export const getCollection = createServerFn({ method: "GET" })
+  .validator((data: unknown) => slugSchema.parse(data))
+  .handler(async ({ data }) => fetchCollectionServer(data.slug));
+
+export const getCartProducts = createServerFn({ method: "GET" })
+  .validator((data: unknown) => cartLinesSchema.parse(data))
+  .handler(async ({ data }) => fetchCartProductsServer(data));

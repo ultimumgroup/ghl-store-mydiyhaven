@@ -2,6 +2,24 @@
 
 TanStack Start / React 19 storefront imported from the latest `mydiyhaven.zip`, then repaired locally. GHL remains the sole product, price, collection and inventory authority. No Supabase integration is required for the implemented features. **Customer payment is not yet implemented.** `/checkout` now reviews the cart and requests current prices/stock; it does not place an order or charge a card.
 
+
+![My DIY Haven storefront with a woodturning hero and warm olive branding](docs/images/storefront-desktop.png)
+
+<details>
+<summary>Mobile collection browsing</summary>
+
+<img src="docs/images/collections-mobile.png" alt="My DIY Haven collection directory on mobile" width="300" />
+
+</details>
+
+## Reuse and project status
+
+Original Ultimum code is available under the [MIT license](LICENSE), allowing commercial client work and resale. [Third-party notices](THIRD_PARTY_NOTICES.md) explain the separate rights for Larry's identity, photos, stock images, and GHL tooling. The GHL export/build-package redistribution terms still need confirmation. See the [open-source recommendation](docs/OPEN-SOURCE.md) before repackaging this as a template.
+
+This is an early reference implementation for agencies exploring a GHL-backed storefront. It includes server-rendered pages, live variants and stock, collection browsing, compact persistent carts, and authoritative subtotal checks. Customer payment remains disabled.
+
+Collections use a metadata-only directory request. Opening a collection fetches prices for that collection; product pages fetch their product and up to four related products. Home previews and cart restoration also resolve only the products they display. See [performance notes](docs/PERFORMANCE.md) for measurements and remaining limits.
+
 ## Brand and pages
 
 The home page, `/about` and `/studio` now introduce Larry’s story and upcoming creative experiences. Supplied brand assets and Larry’s headshot live in `public/images/`; the scope screenshot is in `docs/reference/`. See [brand and page notes](docs/BRAND-AND-PAGES.md), [image credits](docs/IMAGE-SOURCES.md), and [SEO launch notes](docs/SEO-LAUNCH.md). The home story renders independently of catalog API latency.
@@ -14,6 +32,8 @@ Node 22.22.1 and the existing shared Playwright installation were used. Dependen
 
 ```bash
 npm ci --ignore-scripts
+cp -n .env.example .env.local
+# Fill in your own server credentials in .env.local before starting.
 npm run dev:local
 npm run typecheck
 npm test

@@ -42,6 +42,8 @@ const prices = [
     availableQuantity: 0,
   },
 ];
+let fixtureProducts = [product];
+let fixtureCollections = [];
 const env = { GHL_PIT: "fake", GHL_LOCATION_ID: "fake" };
 const context = vm.createContext({
   process: { env },
@@ -56,14 +58,20 @@ const context = vm.createContext({
   fetch: async (url, options) => {
     assert.equal(options.method, undefined, "Adapter must be read-only");
     calls.push(url);
-    const path = new URL(url).pathname;
+    const parsed = new URL(url);
+    const path = parsed.pathname;
+    const members = parsed.searchParams.has("collectionIds")
+      ? fixtureProducts.filter((p) =>
+          p.collectionIds?.includes(parsed.searchParams.get("collectionIds")),
+        )
+      : fixtureProducts;
     return Response.json(
       path === "/products/"
-        ? { products: [product], total: [{ total: 1 }] }
+        ? { products: members, total: [{ total: members.length }] }
         : path.endsWith("/price")
           ? { prices, total: 2 }
           : path === "/products/collections"
-            ? { data: [], total: 0 }
+            ? { data: fixtureCollections, total: fixtureCollections.length }
             : { data: [] },
     );
   },
@@ -148,6 +156,56 @@ const count = calls.length;
 assert.equal((await api.createGHLOrderServer({})).success, false);
 assert.equal(calls.length, count, "No simulated payment recording");
 assert.equal((await api.validatePromoCodeServer({ code: "HAVEN10", subtotal: 100 })).valid, false);
+// Cold directory must not fetch any prices; later requests resolve only their scope.
+fixtureProducts = Array.from({ length: 12 }, (_, i) => ({
+  ...product,
+  _id: `scope${i}`,
+  slug: `scope-${i}`,
+  collectionIds: [i < 2 ? "small" : "large"],
+}));
+fixtureCollections = [
+  { _id: "small", name: "Small", slug: "small" },
+  { _id: "large", name: "Large", slug: "large" },
+];
+env.GHL_LOCATION_ID = "scope-fixture";
+const directoryStart = calls.length;
+const [directory] = await Promise.all([api.fetchCollectionsServer(), api.fetchCollectionsServer()]);
+assert.equal(
+  calls.length - directoryStart,
+  4,
+  "One product list, one collection list, two membership reads",
+);
+assert.equal(
+  calls.slice(directoryStart).filter((u) => new URL(u).pathname.endsWith("/price")).length,
+  0,
+);
+assert.equal(directory.collections[0].itemCount, 2);
+assert.equal(directory.collections[1].itemCount, 10);
+let start = calls.length;
+const small = await api.fetchCollectionServer("small");
+assert.equal(small.products.length, 2);
+assert.equal(calls.length - start, 2, "Only the selected collection needs prices");
+start = calls.length;
+await api.fetchCollectionServer("small");
+assert.equal(calls.length, start, "Warm prices should be shared");
+assert.equal((await api.fetchCollectionServer("missing")).collections.length, 0);
+assert.equal((await api.fetchProductServer("missing")).product, null);
+start = calls.length;
+const selected = await api.fetchCartProductsServer([
+  { productId: "scope11", variantId: "price1", quantity: 1 },
+]);
+assert.equal(selected.products.length, 1);
+assert.equal(calls.length - start, 1, "Saved cart must not load other products' prices");
+start = calls.length;
+await api.fetchFeaturedServer();
+assert.equal(calls.length - start, 2, "Featured products reuse already resolved prices");
+const detail = await api.fetchProductServer("scope-10");
+assert.equal(detail.product.id, "scope10");
+assert.equal(detail.related.length, 4);
+assert(detail.related.every((p) => p.collectionIds.includes("large")));
+console.log(
+  "Scoped catalog tests passed: directory has zero price calls, counts, collection prices, warm cache, missing routes, selected cart, featured and related products.",
+);
 delete env.GHL_PIT;
 await assert.rejects(() => api.fetchCatalogServer());
 console.log(

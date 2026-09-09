@@ -100,9 +100,29 @@ async function pricesFor(id: string) {
     "prices",
   );
 }
-let cache: { key: string; expires: number; value: CatalogResult } | undefined;
-let pending: { key: string; promise: Promise<CatalogResult> } | undefined;
-async function loadCatalog(): Promise<CatalogResult> {
+// Separate the product index from prices: directory requests never load variants.
+function memo<T>(work: () => Promise<T>) {
+  let cache: { key: string; expires: number; value: T } | undefined;
+  let pending: { key: string; promise: Promise<T> } | undefined;
+  return async (): Promise<T> => {
+    const { pit, location } = config();
+    const key = location + pit;
+    if (cache?.key === key && cache.expires > Date.now()) return cache.value;
+    if (pending?.key === key) return pending.promise;
+    const promise = work().then((value) => {
+      cache = { key, value, expires: Date.now() + 300000 };
+      return value;
+    });
+    const entry = { key, promise };
+    pending = entry;
+    try {
+      return await promise;
+    } finally {
+      if (pending === entry) pending = undefined;
+    }
+  };
+}
+async function loadIndex() {
   const { location } = config();
   const [raw, cols] = await Promise.all([
     list<RawProduct>("/products/", { locationId: location }, "products"),
@@ -137,50 +157,87 @@ async function loadCatalog(): Promise<CatalogResult> {
       c.itemCount++;
     }
   });
-  const products = await mapLimit(published, async (p) =>
-    normalizeProduct(
-      p,
-      await pricesFor(p._id),
-      [...new Set([...(p.collectionIds || []), ...(memberships.get(p._id) || [])])],
-      collections,
-    ),
-  );
-  return { products, collections, live: true };
+  const products = published.map((p) => ({
+    ...p,
+    collectionIds: [...new Set([...(p.collectionIds || []), ...(memberships.get(p._id) || [])])],
+  }));
+  return { products, collections };
 }
-export async function fetchCatalogServer(): Promise<CatalogResult> {
-  // In-memory only, keyed by location+credential; never a second source of truth.
-  const { pit, location } = config();
-  const key = location + pit;
-  if (cache?.key === key && cache.expires > Date.now()) return cache.value;
-  if (pending?.key === key) return pending.promise;
-  const promise = loadCatalog().then((value) => {
-    cache = { key, value, expires: Date.now() + 300000 };
-    return value;
-  });
-  const entry = { key, promise };
-  pending = entry;
-  try {
-    return await promise;
-  } finally {
-    if (pending === entry) pending = undefined;
+const fetchIndex = memo(loadIndex);
+// Bounded by the products in the current index; expired entries are discarded.
+const priceReaders = new Map<string, { expires: number; read: () => Promise<RawPrice[]> }>();
+function cachedPricesFor(id: string) {
+  const { location, pit } = config();
+  const key = JSON.stringify([location, pit, id]);
+  for (const [k, entry] of priceReaders) {
+    if (entry.expires <= Date.now()) priceReaders.delete(k);
   }
+  let entry = priceReaders.get(key);
+  if (!entry) {
+    entry = { expires: Date.now() + 300000, read: memo(() => pricesFor(id)) };
+    priceReaders.set(key, entry);
+  }
+  return entry.read();
 }
-export async function fetchProductServer(slug: string): Promise<ProductResult> {
-  const c = await fetchCatalogServer();
-  const product = c.products.find((p) => p.slug === slug || p.id === slug) || null;
+async function resolveProducts(raw: RawProduct[], collections: CatalogResult["collections"]) {
+  return mapLimit(raw, async (p) =>
+    normalizeProduct(p, await cachedPricesFor(p._id), p.collectionIds || [], collections),
+  );
+}
+export async function fetchCollectionsServer() {
+  const index = await fetchIndex();
+  return { collections: index.collections, live: true as const };
+}
+export async function fetchCollectionServer(slug: string): Promise<CatalogResult> {
+  const index = await fetchIndex();
+  const collection = index.collections.find((c) => c.slug === slug || c.id === slug);
+  if (!collection) return { products: [], collections: [], live: true };
+  const members = index.products.filter((p) => p.collectionIds.includes(collection.id));
   return {
-    product,
-    related: product
-      ? c.products
-          .filter(
-            (p) =>
-              p.id !== product.id &&
-              p.collectionIds?.some((id) => product.collectionIds?.includes(id)),
-          )
-          .slice(0, 4)
-      : [],
+    products: await resolveProducts(members, index.collections),
+    collections: [collection],
     live: true,
   };
+}
+export async function fetchCartProductsServer(items: QuoteLineInput[]): Promise<CatalogResult> {
+  const index = await fetchIndex();
+  const ids = new Set(items.map((i) => i.productId));
+  return {
+    products: await resolveProducts(
+      index.products.filter((p) => ids.has(p._id)),
+      index.collections,
+    ),
+    collections: [],
+    live: true,
+  };
+}
+export async function fetchFeaturedServer(): Promise<CatalogResult> {
+  const index = await fetchIndex();
+  return {
+    products: await resolveProducts(index.products.slice(0, 4), index.collections),
+    collections: index.collections,
+    live: true,
+  };
+}
+export async function fetchCatalogServer(): Promise<CatalogResult> {
+  const index = await fetchIndex();
+  return {
+    products: await resolveProducts(index.products, index.collections),
+    collections: index.collections,
+    live: true,
+  };
+}
+export async function fetchProductServer(slug: string): Promise<ProductResult> {
+  const index = await fetchIndex();
+  const raw = index.products.find((p) => p.slug === slug || p._id === slug);
+  if (!raw) return { product: null, related: [], live: true };
+  const related = index.products
+    .filter(
+      (p) => p._id !== raw._id && p.collectionIds.some((id) => raw.collectionIds.includes(id)),
+    )
+    .slice(0, 4);
+  const products = await resolveProducts([raw, ...related], index.collections);
+  return { product: products[0]!, related: products.slice(1), live: true };
 }
 export interface PromoValidationResult {
   valid: boolean;
@@ -225,13 +282,13 @@ export async function quoteCartServer(items: QuoteLineInput[]) {
   if (!items.length || items.length > 20) throw new Error("Choose between 1 and 20 cart lines.");
   if (new Set(items.map((i) => `${i.productId}:${i.variantId}`)).size !== items.length)
     throw new Error("Duplicate cart lines are not allowed.");
-  const c = await fetchCatalogServer();
+  const c = await fetchIndex();
   const lines = await mapLimit(items, async (i) => {
     if (!Number.isInteger(i.quantity) || i.quantity < 1 || i.quantity > 99)
       throw new Error("Invalid quantity.");
-    const p = c.products.find((p) => p.id === i.productId);
+    const p = c.products.find((p) => p._id === i.productId);
     if (!p) throw new Error("An item is no longer available.");
-    const prices = await pricesFor(p.id);
+    const prices = await pricesFor(p._id);
     const price = prices.find(
       (v) =>
         v._id === i.variantId &&
@@ -248,7 +305,7 @@ export async function quoteCartServer(items: QuoteLineInput[]) {
     )
       throw new Error(`Requested quantity is unavailable for ${p.name}.`);
     return {
-      productId: p.id,
+      productId: p._id,
       variantId: price._id,
       name: p.name,
       variantName: price.name || "Standard",

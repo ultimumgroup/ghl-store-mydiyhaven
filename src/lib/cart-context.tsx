@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, useMemo, type ReactNode } from "react";
 import type { StoreProduct, StoreVariant } from "./catalog";
 import { readJSONCookie, writeCookie, deleteCookie } from "./cookies";
-import { getCatalog } from "./ghl.functions";
+import { getCartProducts } from "./ghl.functions";
 import { parseCart, restoreCart, serializeCart, lineKeyFor, type CartItem } from "./cart-codec";
 import { toast } from "sonner";
 export type { CartItem } from "./cart-codec";
@@ -33,7 +33,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return;
     }
     setRestoreError(false);
-    getCatalog()
+    getCartProducts({ data: saved })
       .then((c) => {
         if (!active) return;
         const restored = restoreCart(saved, c.products);

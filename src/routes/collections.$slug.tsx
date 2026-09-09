@@ -3,11 +3,11 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { ProductCard } from "@/components/store/product-card";
 import { ArrowLeft, Sparkles, Layers } from "lucide-react";
 import { BRAND_NAME } from "@/lib/brand";
-import { catalogQueryOptions } from "@/lib/catalog-query";
+import { collectionQueryOptions } from "@/lib/catalog-query";
 
 export const Route = createFileRoute("/collections/$slug")({
   loader: async ({ context, params }) => {
-    const data = await context.queryClient.ensureQueryData(catalogQueryOptions());
+    const data = await context.queryClient.ensureQueryData(collectionQueryOptions(params.slug));
     const collection =
       data.collections.find((c) => c.slug === params.slug || c.id === params.slug) || null;
     if (!collection) throw notFound();
@@ -60,7 +60,7 @@ export const Route = createFileRoute("/collections/$slug")({
 
 function CollectionDetailPage() {
   const { collection } = Route.useLoaderData();
-  const { data } = useSuspenseQuery(catalogQueryOptions());
+  const { data } = useSuspenseQuery(collectionQueryOptions(collection.slug));
   const colProducts = data.products.filter(
     (p) => p.collectionId === collection.id || p.collectionIds?.includes(collection.id),
   );

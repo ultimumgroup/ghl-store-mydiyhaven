@@ -1,9 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { ProductCard } from "@/components/store/product-card";
 import { ArrowRight, Layers } from "lucide-react";
 import { BRAND_NAME } from "@/lib/brand";
-import { catalogQueryOptions } from "@/lib/catalog-query";
+import { collectionsQueryOptions } from "@/lib/catalog-query";
 
 export const Route = createFileRoute("/collections/")({
   head: () => ({
@@ -26,7 +25,7 @@ export const Route = createFileRoute("/collections/")({
     ],
     links: [{ rel: "canonical", href: "https://mydiyhaven.com/collections" }],
   }),
-  loader: ({ context }) => context.queryClient.ensureQueryData(catalogQueryOptions()),
+  loader: ({ context }) => context.queryClient.ensureQueryData(collectionsQueryOptions()),
   component: CollectionsIndexPage,
   errorComponent: ({ error }) => (
     <div className="mx-auto max-w-md px-4 py-20 text-center">
@@ -37,8 +36,8 @@ export const Route = createFileRoute("/collections/")({
 });
 
 function CollectionsIndexPage() {
-  const { data } = useSuspenseQuery(catalogQueryOptions());
-  const { collections, products } = data;
+  const { data } = useSuspenseQuery(collectionsQueryOptions());
+  const { collections } = data;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
@@ -55,58 +54,43 @@ function CollectionsIndexPage() {
         </p>
       </div>
 
-      <div className="mt-12 space-y-16">
-        {collections.map((col) => {
-          const colProducts = products.filter(
-            (p) => p.collectionId === col.id || p.collectionIds?.includes(col.id),
-          );
-
-          return (
-            <section key={col.id} className="scroll-mt-24">
-              <div className="grid gap-8 lg:grid-cols-[300px_1fr]">
-                <div className="flex flex-col justify-between rounded-2xl border border-border bg-card p-6 shadow-sm">
-                  <div>
-                    <div className="aspect-[4/3] overflow-hidden rounded-xl bg-muted">
-                      {col.image ? (
-                        <img
-                          src={col.image}
-                          alt={col.name}
-                          className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center text-muted-foreground">
-                          <Layers className="h-8 w-8" />
-                        </div>
-                      )}
-                    </div>
-                    <h2 className="mt-5 font-display text-2xl font-bold text-foreground">
-                      {col.name}
-                    </h2>
-                    <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                      {col.description}
-                    </p>
-                  </div>
-                  <div className="mt-6 border-t border-border pt-4">
-                    <Link
-                      to="/collections/$slug"
-                      params={{ slug: col.slug }}
-                      className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
-                    >
-                      View collection ({colProducts.length} pieces){" "}
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </div>
+      <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {collections.map((col) => (
+          <Link
+            key={col.id}
+            to="/collections/$slug"
+            params={{ slug: col.slug }}
+            className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-shadow hover:shadow-md"
+          >
+            <div className="aspect-[4/3] overflow-hidden bg-muted">
+              {col.image ? (
+                <img
+                  src={col.image}
+                  alt=""
+                  loading="lazy"
+                  width={600}
+                  height={450}
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center text-muted-foreground">
+                  <Layers className="h-10 w-10" />
                 </div>
-
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {colProducts.slice(0, 3).map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
-              </div>
-            </section>
-          );
-        })}
+              )}
+            </div>
+            <div className="p-6">
+              <h2 className="font-display text-2xl font-bold text-foreground">{col.name}</h2>
+              {col.description && (
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  {col.description}
+                </p>
+              )}
+              <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary">
+                View collection ({col.itemCount} pieces) <ArrowRight className="h-4 w-4" />
+              </span>
+            </div>
+          </Link>
+        ))}
       </div>
     </div>
   );

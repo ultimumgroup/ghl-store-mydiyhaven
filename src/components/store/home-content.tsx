@@ -11,11 +11,11 @@ import {
   HeartHandshake,
 } from "lucide-react";
 import { ProductCard } from "@/components/store/product-card";
-import { catalogQueryOptions } from "@/lib/catalog-query";
+import { featuredQueryOptions } from "@/lib/catalog-query";
 function ShopPreview() {
   const [ready, setReady] = useState(false);
   useEffect(() => setReady(true), []);
-  const { data, isError } = useQuery({ ...catalogQueryOptions(), enabled: ready });
+  const { data, isError } = useQuery({ ...featuredQueryOptions(), enabled: ready });
   return (
     <div className="haven-product-preview">
       {data ? (
