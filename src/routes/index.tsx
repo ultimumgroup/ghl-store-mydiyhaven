@@ -1,30 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { HomeContent } from "@/components/store/home-content";
-import { BRAND_NAME } from "@/lib/brand";
-import { catalogQueryOptions } from "@/lib/catalog-query";
-
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: `${BRAND_NAME} — Handmade Home Goods` },
+      { title: "My DIY Haven | Healing Through Creativity" },
       {
         name: "description",
         content:
-          "Handcrafted ceramics, textiles, and woodwork made in small batches. Objects shaped by hand and meant to last a lifetime.",
+          "A veteran-owned creative business founded by Larry Dillon. Shop pens, pen blanks, apparel and gifts, and discover upcoming classes and studio experiences.",
       },
-      { property: "og:title", content: `${BRAND_NAME} — Handmade Home Goods` },
+      { property: "og:title", content: "My DIY Haven — Create. Connect. Heal. Belong." },
       {
         property: "og:description",
-        content: "Handcrafted ceramics, textiles, and woodwork made in small batches.",
+        content:
+          "Meaningful things to make. A welcoming place to belong. Meet Larry, explore the shop, and discover what's coming to the studio.",
       },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:url", content: "https://mydiyhaven.com/" },
     ],
+    links: [{ rel: "canonical", href: "https://mydiyhaven.com/" }],
   }),
-  loader: ({ context }) => context.queryClient.ensureQueryData(catalogQueryOptions()),
-  component: Index,
+  component: HomeContent,
 });
-
-function Index() {
-  return <HomeContent />;
-}

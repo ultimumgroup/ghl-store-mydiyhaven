@@ -2,6 +2,12 @@
 
 TanStack Start / React 19 storefront imported from the latest `mydiyhaven.zip`, then repaired locally. GHL remains the sole product, price, collection and inventory authority. No Supabase integration is required for the implemented features. **Customer payment is not yet implemented.** `/checkout` now reviews the cart and requests current prices/stock; it does not place an order or charge a card.
 
+## Brand and pages
+
+The home page, `/about` and `/studio` now introduce Larry’s story and upcoming creative experiences. Supplied brand assets and Larry’s headshot live in `public/images/`; the scope screenshot is in `docs/reference/`. See [brand and page notes](docs/BRAND-AND-PAGES.md), [image credits](docs/IMAGE-SOURCES.md), and [SEO launch notes](docs/SEO-LAUNCH.md). The home story renders independently of catalog API latency.
+
+Regenerate the live catalog sitemap with `python3 scripts/generate-sitemap.py`. Run `/opt/playwright-python/bin/python tests/brand-browser.py` against the local server (or set `MDH_BASE` to another local URL).
+
 ## Local development
 
 Node 22.22.1 and the existing shared Playwright installation were used. Dependencies are project-local; no sudo or system package changes were necessary.

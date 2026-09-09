@@ -14,19 +14,34 @@ export const Route = createFileRoute("/collections/$slug")({
     return { collection };
   },
   head: ({ loaderData }) => {
-    const colName = loaderData?.collection?.name || "Collection";
+    const collection = loaderData?.collection;
+    if (!collection)
+      return {
+        meta: [
+          { title: `Collection not found — ${BRAND_NAME}` },
+          { name: "robots", content: "noindex" },
+        ],
+      };
+    const title = `${collection.name} — ${BRAND_NAME}`;
+    const description = (
+      collection.description ||
+      `Explore ${collection.name} from My DIY Haven, Larry Dillon’s veteran-owned creative shop.`
+    )
+      .replace(/\s+/g, " ")
+      .slice(0, 160);
+    const url = `https://mydiyhaven.com/collections/${encodeURIComponent(collection.slug)}`;
     return {
       meta: [
-        { title: `${colName} — ${BRAND_NAME}` },
-        {
-          name: "description",
-          content:
-            loaderData?.collection?.description || "Handcrafted products in this collection.",
-        },
-        { property: "og:title", content: `${colName} — ${BRAND_NAME}` },
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:url", content: url },
         { property: "og:type", content: "website" },
+        ...(collection.image ? [{ property: "og:image", content: collection.image }] : []),
         { name: "twitter:card", content: "summary_large_image" },
       ],
+      links: [{ rel: "canonical", href: url }],
     };
   },
   notFoundComponent: () => (
@@ -47,10 +62,7 @@ function CollectionDetailPage() {
   const { collection } = Route.useLoaderData();
   const { data } = useSuspenseQuery(catalogQueryOptions());
   const colProducts = data.products.filter(
-    (p) =>
-      p.collectionId === collection.id ||
-      p.collectionIds?.includes(collection.id) ||
-      p.category.toLowerCase().includes(collection.id.toLowerCase()),
+    (p) => p.collectionId === collection.id || p.collectionIds?.includes(collection.id),
   );
 
   return (
@@ -66,7 +78,7 @@ function CollectionDetailPage() {
         <div className="grid items-center gap-8 lg:grid-cols-2">
           <div>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground">
-              <Sparkles className="h-3.5 w-3.5" /> Handcrafted Series
+              <Sparkles className="h-3.5 w-3.5" /> From the shop
             </span>
             <h1 className="mt-4 font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
               {collection.name}
@@ -94,7 +106,7 @@ function CollectionDetailPage() {
       <div className="mt-12">
         <div className="flex items-center justify-between border-b border-border pb-4">
           <h2 className="font-display text-2xl font-bold text-foreground">
-            Pieces in this collection ({colProducts.length})
+            Products in this collection ({colProducts.length})
           </h2>
         </div>
 

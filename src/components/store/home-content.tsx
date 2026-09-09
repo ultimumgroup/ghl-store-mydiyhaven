@@ -1,169 +1,301 @@
 import { Link } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { ArrowRight, Truck, Leaf, HandHeart } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  PenTool,
+  Shirt,
+  Sparkles,
+  Users,
+  HeartHandshake,
+} from "lucide-react";
 import { ProductCard } from "@/components/store/product-card";
-import { HERO_IMAGE } from "@/lib/catalog";
-import { BRAND_NAME } from "@/lib/brand";
 import { catalogQueryOptions } from "@/lib/catalog-query";
-
-export function HomeContent() {
-  const { data } = useSuspenseQuery(catalogQueryOptions());
-  const products = data.products;
-  const featured = products.slice(0, 8);
-
+function ShopPreview() {
+  const [ready, setReady] = useState(false);
+  useEffect(() => setReady(true), []);
+  const { data, isError } = useQuery({ ...catalogQueryOptions(), enabled: ready });
   return (
-    <div>
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-12 sm:px-6 lg:grid-cols-2 lg:gap-12 lg:px-8 lg:py-20">
-          <div className="flex flex-col items-start">
-            <span className="inline-flex items-center rounded-full bg-accent/60 px-3 py-1 text-xs font-medium text-accent-foreground">
-              Handmade in small batches
-            </span>
-            <h1 className="mt-5 font-display text-4xl font-bold leading-[1.05] tracking-tight text-foreground text-balance sm:text-5xl lg:text-6xl">
-              Objects made slowly, meant to last a lifetime.
-            </h1>
-            <p className="mt-5 max-w-md text-base leading-relaxed text-muted-foreground sm:text-lg">
-              {BRAND_NAME} is a studio of ceramicists, weavers, and woodworkers. Every piece is
-              shaped by hand and finished with intention — for a home that feels gathered, not
-              furnished.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild size="lg">
-                <a href="#shop">
-                  Shop the collection <ArrowRight className="h-4 w-4" />
-                </a>
-              </Button>
-              <Button asChild size="lg" variant="outline">
-                <a href="#story">Our story</a>
-              </Button>
-            </div>
-            <div className="mt-10 flex gap-8">
-              <div>
-                <p className="font-display text-2xl font-bold text-foreground">12k+</p>
-                <p className="text-xs text-muted-foreground">Homes warmed</p>
-              </div>
-              <div>
-                <p className="font-display text-2xl font-bold text-foreground">4.8★</p>
-                <p className="text-xs text-muted-foreground">Avg. rating</p>
-              </div>
-              <div>
-                <p className="font-display text-2xl font-bold text-foreground">100%</p>
-                <p className="text-xs text-muted-foreground">Handmade</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="relative">
-            <div className="overflow-hidden rounded-3xl shadow-xl shadow-primary/10">
-              <img
-                src={HERO_IMAGE}
-                alt="Handcrafted ceramic home goods in warm earthy tones"
-                className="aspect-[4/3] w-full object-cover"
-              />
-            </div>
-            <div className="absolute -bottom-5 -left-5 hidden rounded-2xl border border-border bg-card p-4 shadow-lg sm:block">
-              <p className="font-display text-sm font-semibold text-foreground">Free shipping</p>
-              <p className="text-xs text-muted-foreground">on orders over $150</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Trust strip */}
-      <section className="border-y border-border bg-secondary/40">
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 py-8 sm:grid-cols-3 sm:px-6 lg:px-8">
-          {[
-            {
-              icon: HandHeart,
-              title: "Made by hand",
-              text: "Each piece shaped and finished by a single maker.",
-            },
-            {
-              icon: Leaf,
-              title: "Natural materials",
-              text: "Clay, wool, linen, and walnut — nothing synthetic.",
-            },
-            {
-              icon: Truck,
-              title: "Shipped with care",
-              text: "Plastic-free packaging, carbon-neutral delivery.",
-            },
-          ].map((f) => (
-            <div key={f.title} className="flex items-start gap-3">
-              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground">
-                <f.icon className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="font-display text-sm font-semibold text-foreground">{f.title}</p>
-                <p className="text-sm text-muted-foreground">{f.text}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Product grid */}
-      <section id="shop" className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="flex items-end justify-between">
-          <div>
-            <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-              The collection
-            </h2>
-            <p className="mt-2 text-muted-foreground">
-              {products.length} pieces, each made in limited quantities.
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {featured.map((product) => (
+    <div className="haven-product-preview">
+      {data ? (
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {data.products.slice(0, 4).map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
-      </section>
-
-      {/* Story */}
-      <section id="story" className="border-t border-border bg-secondary/30">
-        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:px-8">
-          <div>
-            <span className="text-xs font-medium uppercase tracking-widest text-primary">
-              Our story
-            </span>
-            <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-              A studio built around the maker's hand.
-            </h2>
-            <p className="mt-4 text-muted-foreground">
-              We began as a single pottery wheel in a converted barn. Today, {BRAND_NAME} is a
-              collective of artisans who believe that the objects we live with should carry the mark
-              of the person who made them — the slight imperfections, the warmth of a hand-formed
-              edge, the patience of a slow process.
+      ) : (
+        <div className="haven-shop-loading">
+          <PenTool size={30} />
+          <p>
+            {isError
+              ? "The shop is taking a little longer to load."
+              : "Finding your next source of inspiration…"}
+          </p>
+          <Link to="/products">
+            Explore the full shop <ArrowRight size={16} />
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+}
+export function HomeContent() {
+  return (
+    <>
+      <section className="haven-hero" aria-labelledby="home-title">
+        <img
+          className="haven-hero-image"
+          src="/images/stock-woodturning.jpg"
+          alt=""
+          fetchPriority="high"
+          width="1800"
+          height="1800"
+        />
+        <div className="haven-hero-mask" />
+        <div className="haven-shell haven-hero-content">
+          <div className="haven-hero-copy">
+            <p className="haven-eyebrow">
+              <span /> Veteran owned · Made for connection
             </p>
-            <p className="mt-4 text-muted-foreground">
-              Nothing here is mass-produced. When a piece sells out, it returns only when the maker
-              has time to make it again.
+            <h1 id="home-title">
+              Make something
+              <br />
+              <em>meaningful.</em>
+            </h1>
+            <p className="haven-hero-description">
+              A project to get lost in. A skill to discover.
+              <br className="hidden sm:block" /> A place to feel like yourself.
             </p>
-          </div>
-          <div id="craft" className="grid grid-cols-2 gap-4">
-            {products.slice(2, 6).map((p) => (
-              <Link
-                key={p.id}
-                to="/products/$slug"
-                params={{ slug: p.slug }}
-                className="overflow-hidden rounded-xl"
-              >
-                <img
-                  src={p.image}
-                  alt={p.name}
-                  loading="lazy"
-                  className="aspect-square w-full object-cover transition-transform duration-500 hover:scale-105"
-                />
+            <p className="haven-hero-small">
+              Welcome to My DIY Haven. Good things happen when we make room to create.
+            </p>
+            <div className="haven-actions">
+              <Link to="/products" className="haven-button">
+                Explore the shop <ArrowUpRight size={18} />
               </Link>
-            ))}
+              <Link to="/about" className="haven-button-outline">
+                Meet the heart behind it
+              </Link>
+            </div>
+          </div>
+          <div className="haven-hero-seal">
+            <img src="/images/my-diy-haven-gold-icon.png" width="325" height="365" alt="" />
+            <span>
+              Healing Through
+              <br />
+              Creativity.
+            </span>
+          </div>
+        </div>
+        <div className="haven-shell haven-hero-foot">
+          <span>For makers. For first-timers. For you.</span>
+          <span className="haven-photo-note">The joy of making · illustrative photography</span>
+        </div>
+      </section>
+      <div className="haven-values" aria-label="Our purpose">
+        <div className="haven-shell">
+          {["Create.", "Connect.", "Heal.", "Belong."].map((word, i) => (
+            <span key={word}>
+              <small>0{i + 1}</small>
+              {word}
+            </span>
+          ))}
+        </div>
+      </div>
+      <section className="haven-shell haven-section haven-intro">
+        <p className="haven-eyebrow">More than a shop. A place to begin.</p>
+        <div className="haven-intro-grid">
+          <h2>
+            Something in your hands.
+            <br />
+            <em>Something for your spirit.</em>
+          </h2>
+          <div>
+            <p>
+              Maybe it starts with a pen blank, a personal gift, or the idea for a T-shirt. Maybe it
+              starts with simply wanting to try something new.
+            </p>
+            <p>
+              My DIY Haven brings making and belonging together — through creative goods, custom
+              work, and a growing vision for a welcoming community studio.
+            </p>
+            <Link to="/about" className="haven-text-link">
+              Discover our story <ArrowRight size={18} />
+            </Link>
           </div>
         </div>
       </section>
-    </div>
+      <section className="haven-discover">
+        <div className="haven-shell haven-section">
+          <div className="haven-section-heading">
+            <div>
+              <p className="haven-eyebrow">Find your starting point</p>
+              <h2>
+                A little spark.
+                <br />
+                Your next creation.
+              </h2>
+            </div>
+            <Link to="/collections" className="haven-text-link">
+              All collections <ArrowUpRight size={18} />
+            </Link>
+          </div>
+          <div className="haven-path-grid">
+            {[
+              {
+                icon: PenTool,
+                n: "01",
+                title: "Pens & pen blanks",
+                text: "A small object with a story to tell. Explore handcrafted pens and blanks for your next turn at the lathe.",
+              },
+              {
+                icon: Shirt,
+                n: "02",
+                title: "Apparel & personal expression",
+                text: "Wear what matters to you. Discover signature apparel and inspiration for something of your own.",
+              },
+              {
+                icon: Sparkles,
+                n: "03",
+                title: "Gifts with a little meaning",
+                text: "Explore signs, ornaments and creative finds that celebrate a person, a passion or a sense of belonging.",
+              },
+            ].map((item) => (
+              <Link to="/collections" key={item.n} className="haven-path-card">
+                <div className="haven-path-card-top">
+                  <item.icon size={29} strokeWidth={1.2} />
+                  <span>{item.n}</span>
+                </div>
+                <h3>{item.title}</h3>
+                <p>{item.text}</p>
+                <span className="haven-path-card-link">
+                  Explore collections <ArrowUpRight size={17} />
+                </span>
+              </Link>
+            ))}
+          </div>
+          <div className="haven-section-heading haven-featured-heading">
+            <div>
+              <p className="haven-eyebrow">From the shop</p>
+              <h2>Discover the possibilities.</h2>
+            </div>
+            <Link to="/products" className="haven-text-link">
+              Shop all products <ArrowRight size={18} />
+            </Link>
+          </div>
+          <ShopPreview />
+        </div>
+      </section>
+      <section className="haven-shell haven-section haven-larry">
+        <div className="haven-larry-image">
+          <div className="haven-portrait">
+            <img
+              src="/images/larry-dillon-headshot.jpg"
+              alt="Larry Dillon, founder of My DIY Haven, smiling"
+              width="571"
+              height="835"
+              loading="lazy"
+            />
+          </div>
+          <span className="haven-portrait-caption">
+            Larry Dillon
+            <br />
+            <small>Founder. Veteran. Maker.</small>
+          </span>
+        </div>
+        <div>
+          <p className="haven-eyebrow">Meet Larry</p>
+          <h2>
+            A lifetime of service.
+            <br />
+            <em>A new way to give back.</em>
+          </h2>
+          <p>
+            An Army medic, a special education teacher, a football coach. Larry Dillon has spent his
+            life showing up for others.
+          </p>
+          <p>
+            When woodturning helped him find moments of calm while coping with PTSD, it opened the
+            door to a new purpose: helping others find their own connection through creativity.
+          </p>
+          <p className="haven-story-emphasis">
+            It started with a lathe and a pen.
+            <br />
+            It became a haven.
+          </p>
+          <Link to="/about" className="haven-text-link">
+            Read Larry’s story <ArrowRight size={18} />
+          </Link>
+        </div>
+      </section>
+      <section className="haven-studio-teaser">
+        <div className="haven-studio-photo">
+          <img
+            src="/images/stock-candle-making.jpg"
+            alt="Hands setting a wick into a candle vessel; illustrative craft photography"
+            width="1600"
+            height="1067"
+            loading="lazy"
+          />
+          <span>Room for a new kind of gathering.</span>
+        </div>
+        <div className="haven-studio-copy">
+          <p className="haven-eyebrow">Coming soon · Classes & studio</p>
+          <h2>
+            Try something new.
+            <br />
+            <em>Find your people.</em>
+          </h2>
+          <p>
+            We’re making room for candle-making and soap-making classes, open studio time, and
+            private events. A place to slow down, learn together, and leave with something you made
+            yourself.
+          </p>
+          <ul>
+            <li>
+              <Sparkles size={18} /> Candle & soap making
+            </li>
+            <li>
+              <Users size={18} /> Open studio & private gatherings
+            </li>
+            <li>
+              <HeartHandshake size={18} /> Veterans, families, first responders & community
+            </li>
+          </ul>
+          <Link to="/studio" className="haven-button">
+            See what’s coming <ArrowUpRight size={18} />
+          </Link>
+          <p className="haven-small-note">
+            Dates and reservations will be announced here. Based at Elevator CoWarehousing.
+          </p>
+        </div>
+      </section>
+      <section className="haven-shell haven-section haven-belong">
+        <img
+          src="/images/my-diy-haven-gold-icon.png"
+          alt=""
+          width="325"
+          height="365"
+          loading="lazy"
+        />
+        <p className="haven-eyebrow">Come as you are</p>
+        <h2>
+          You don’t need to know
+          <br />
+          what you’ll make.
+          <br />
+          <em>Just that you belong.</em>
+        </h2>
+        <p>
+          For veterans and their families. For first responders.
+          <br />
+          For our neighbors. For anyone ready to discover the joy of creating.
+        </p>
+        <Link to="/studio" className="haven-text-link">
+          Find your place at the Haven <ArrowRight size={18} />
+        </Link>
+      </section>
+    </>
   );
 }

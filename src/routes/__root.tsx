@@ -85,23 +85,26 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: `${BRAND_NAME} — Handmade Home Goods` },
+      { title: `${BRAND_NAME} — Healing Through Creativity` },
       {
         name: "description",
         content:
-          "Handcrafted ceramics, textiles, and woodwork made in small batches. Objects shaped by hand and meant to last a lifetime.",
+          "Veteran-owned creative goods, custom work and a welcoming vision for community. Meet founder Larry Dillon and discover My DIY Haven.",
       },
       { name: "author", content: BRAND_NAME },
-      { property: "og:title", content: `${BRAND_NAME} — Handmade Home Goods` },
+      { property: "og:title", content: `${BRAND_NAME} — Healing Through Creativity` },
       {
         property: "og:description",
-        content: "Handcrafted ceramics, textiles, and woodwork made in small batches.",
+        content: "Create. Connect. Heal. Belong. Veteran-owned My DIY Haven.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "My DIY Haven" },
+      { property: "og:image", content: "https://mydiyhaven.com/images/my-diy-haven-round.png" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      { rel: "icon", type: "image/png", href: "/images/my-diy-haven-gold-icon.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       {
         rel: "preconnect",
@@ -110,7 +113,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap",
       },
     ],
   }),
@@ -128,6 +131,41 @@ function RootShell({ children }: { children: ReactNode }) {
       </head>
       <body>
         {children}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "Organization",
+                  "@id": "https://mydiyhaven.com/#organization",
+                  name: "My DIY Haven",
+                  url: "https://mydiyhaven.com/",
+                  logo: "https://mydiyhaven.com/images/my-diy-haven-round.png",
+                  slogan: "Healing Through Creativity",
+                  founder: { "@id": "https://mydiyhaven.com/about#larry" },
+                },
+                {
+                  "@type": "Person",
+                  "@id": "https://mydiyhaven.com/about#larry",
+                  name: "Larry Dillon",
+                  url: "https://mydiyhaven.com/about",
+                  image: "https://mydiyhaven.com/images/larry-dillon-headshot.jpg",
+                  jobTitle: "Founder",
+                  worksFor: { "@id": "https://mydiyhaven.com/#organization" },
+                },
+                {
+                  "@type": "WebSite",
+                  "@id": "https://mydiyhaven.com/#website",
+                  name: "My DIY Haven",
+                  url: "https://mydiyhaven.com/",
+                  publisher: { "@id": "https://mydiyhaven.com/#organization" },
+                },
+              ],
+            }).replace(/</g, "\\u003c"),
+          }}
+        />
         <Scripts />
       </body>
     </html>
@@ -144,7 +182,7 @@ function RootComponent() {
           <PromoProvider>
             <div className="flex min-h-screen flex-col">
               <Header />
-              <main className="flex-1">
+              <main id="main-content" className="flex-1" tabIndex={-1}>
                 {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
                 <Outlet />
               </main>

@@ -20,20 +20,65 @@ import { productQueryOptions } from "@/lib/catalog-query";
 import { formatPrice, priceAvailable, displayPrice, type StoreVariant } from "@/lib/catalog";
 
 export const Route = createFileRoute("/products/$slug")({
-  head: ({ params }) => {
-    // Static head for SEO; full product data loads via the loader/query.
-    return {
-      meta: [
-        { title: `${params.slug} — ${BRAND_NAME}` },
-        { property: "og:type", content: "website" },
-        { name: "twitter:card", content: "summary_large_image" },
-      ],
-    };
-  },
   loader: async ({ context, params }) => {
     const result = await context.queryClient.ensureQueryData(productQueryOptions(params.slug));
     if (!result.product) throw notFound();
-    return { slug: params.slug };
+    return { product: result.product };
+  },
+  head: ({ loaderData }) => {
+    const product = loaderData?.product;
+    if (!product)
+      return {
+        meta: [
+          { title: `Product not found — ${BRAND_NAME}` },
+          { name: "robots", content: "noindex" },
+        ],
+      };
+    const title = `${product.name} — ${BRAND_NAME}`;
+    const description = (
+      product.description ||
+      `${product.name} from My DIY Haven, Larry Dillon’s veteran-owned creative shop.`
+    )
+      .replace(/\s+/g, " ")
+      .slice(0, 160);
+    const url = `https://mydiyhaven.com/products/${encodeURIComponent(product.slug)}`;
+    // Describe the real product without implying that online checkout is live.
+    // Add purchasable Offer markup only once the supported payment handoff is verified.
+    const schema = {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "@id": `${url}#product`,
+      name: product.name,
+      description: product.description || description,
+      url,
+      ...(product.images.length
+        ? { image: product.images }
+        : product.image
+          ? { image: [product.image] }
+          : {}),
+      ...(product.category ? { category: product.category } : {}),
+    };
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:url", content: url },
+        { property: "og:type", content: "website" },
+        ...(product.image
+          ? [
+              { property: "og:image", content: product.image },
+              { property: "og:image:alt", content: product.name },
+            ]
+          : []),
+        { name: "twitter:card", content: "summary_large_image" },
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        { type: "application/ld+json", children: JSON.stringify(schema).replace(/</g, "\\u003c") },
+      ],
+    };
   },
   notFoundComponent: () => (
     <div className="mx-auto max-w-md px-4 py-20 text-center">
@@ -44,8 +89,13 @@ export const Route = createFileRoute("/products/$slug")({
       </Link>
     </div>
   ),
-  component: ProductPage,
+  component: ProductRoute,
 });
+
+function ProductRoute() {
+  const { slug } = Route.useParams();
+  return <ProductPage key={slug} />;
+}
 
 function ProductPage() {
   const { slug } = Route.useParams();
@@ -154,7 +204,7 @@ function ProductPage() {
             <div>
               <dt className="text-muted-foreground">Material</dt>
               <dd className="mt-0.5 font-medium text-foreground">
-                {product.material || "Handcrafted"}
+                {product.material || "See product description"}
               </dd>
             </div>
             <div>
@@ -252,7 +302,7 @@ function ProductPage() {
               terms before payment
             </p>
             <p className="flex items-center gap-2">
-              <Check className="h-4 w-4 text-primary" /> Handmade · one of a kind
+              <Check className="h-4 w-4 text-primary" /> From Larry’s veteran-owned shop
             </p>
           </div>
         </div>

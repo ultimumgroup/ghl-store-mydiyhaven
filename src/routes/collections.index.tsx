@@ -8,16 +8,23 @@ import { catalogQueryOptions } from "@/lib/catalog-query";
 export const Route = createFileRoute("/collections/")({
   head: () => ({
     meta: [
-      { title: `Collections — ${BRAND_NAME}` },
+      { title: `Shop Collections — ${BRAND_NAME}` },
       {
         name: "description",
         content:
-          "Explore handcrafted collections of ceramics, textiles, decor, and woodwork at My DIY Haven.",
+          "Explore pen blanks, handmade pens, military designs, apparel and more from My DIY Haven, a veteran-owned creative shop.",
       },
-      { property: "og:title", content: `Collections — ${BRAND_NAME}` },
+      { property: "og:title", content: `Shop Collections — ${BRAND_NAME}` },
+      {
+        property: "og:description",
+        content:
+          "Explore pen blanks, handmade pens, military designs, apparel and more from My DIY Haven, a veteran-owned creative shop.",
+      },
+      { property: "og:url", content: "https://mydiyhaven.com/collections" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://mydiyhaven.com/collections" }],
   }),
   loader: ({ context }) => context.queryClient.ensureQueryData(catalogQueryOptions()),
   component: CollectionsIndexPage,
@@ -43,18 +50,15 @@ function CollectionsIndexPage() {
           Our Collections
         </h1>
         <p className="mt-3 max-w-2xl text-base text-muted-foreground sm:text-lg">
-          Explore objects grouped by material, room, and craft tradition. Every piece is handcrafted
-          in small batches.
+          Find a design that means something to you, a blank for your next pen, or a gift with a
+          personal touch. Explore the collections below.
         </p>
       </div>
 
       <div className="mt-12 space-y-16">
         {collections.map((col) => {
           const colProducts = products.filter(
-            (p) =>
-              p.collectionId === col.id ||
-              p.collectionIds?.includes(col.id) ||
-              p.category.toLowerCase().includes(col.id.toLowerCase()),
+            (p) => p.collectionId === col.id || p.collectionIds?.includes(col.id),
           );
 
           return (

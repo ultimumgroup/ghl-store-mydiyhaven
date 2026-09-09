@@ -7,21 +7,28 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { BRAND_NAME } from "@/lib/brand";
 import { catalogQueryOptions } from "@/lib/catalog-query";
-import { formatPrice } from "@/lib/catalog";
+import { displayPrice } from "@/lib/catalog";
 
 export const Route = createFileRoute("/products/")({
   head: () => ({
     meta: [
-      { title: `All Handcrafted Products — ${BRAND_NAME}` },
+      { title: `Shop Pens, Pen Blanks & More — ${BRAND_NAME}` },
       {
         name: "description",
         content:
-          "Browse our full catalog of handcrafted ceramics, textiles, candles, and woodwork at My DIY Haven.",
+          "Shop pen blanks, handmade pens, apparel, signs and creative supplies from My DIY Haven, Larry Dillon’s veteran-owned shop.",
       },
-      { property: "og:title", content: `All Handcrafted Products — ${BRAND_NAME}` },
+      { property: "og:title", content: `Shop Pens, Pen Blanks & More — ${BRAND_NAME}` },
+      {
+        property: "og:description",
+        content:
+          "Shop pen blanks, handmade pens, apparel, signs and creative supplies from My DIY Haven, Larry Dillon’s veteran-owned shop.",
+      },
+      { property: "og:url", content: "https://mydiyhaven.com/products" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://mydiyhaven.com/products" }],
   }),
   loader: ({ context }) => context.queryClient.ensureQueryData(catalogQueryOptions()),
   component: ProductsCatalogPage,
@@ -38,9 +45,7 @@ function ProductsCatalogPage() {
   const products = data.products;
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [sortBy, setSortBy] = useState<"featured" | "price-asc" | "price-desc" | "rating">(
-    "featured",
-  );
+  const [sortBy, setSortBy] = useState<"featured" | "price-asc" | "price-desc">("featured");
 
   const categories = useMemo(() => {
     const set = new Set(products.map((p) => p.category));
@@ -59,9 +64,10 @@ function ProductsCatalogPage() {
         return matchesCategory && matchesSearch;
       })
       .sort((a, b) => {
-        if (sortBy === "price-asc") return (a.price || 0) - (b.price || 0);
-        if (sortBy === "price-desc") return (b.price || 0) - (a.price || 0);
-        if (sortBy === "rating") return b.rating - a.rating;
+        if (sortBy === "price-asc")
+          return (displayPrice(a)?.amount ?? 0) - (displayPrice(b)?.amount ?? 0);
+        if (sortBy === "price-desc")
+          return (displayPrice(b)?.amount ?? 0) - (displayPrice(a)?.amount ?? 0);
         return 0;
       });
   }, [products, selectedCategory, searchQuery, sortBy]);
@@ -78,8 +84,8 @@ function ProductsCatalogPage() {
           </h1>
           <p className="mt-2 text-base text-muted-foreground">
             {data.live
-              ? `${products.length} pieces, live from our store.`
-              : "Explore objects made by hand in small batches with natural, durable materials."}
+              ? `${products.length} products for your next project, personal gift, or everyday favorite.`
+              : "Pen blanks, handmade pens, apparel and more from Larry’s shop."}
           </p>
         </div>
       </div>
@@ -106,7 +112,7 @@ function ProductsCatalogPage() {
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Search pieces, materials..."
+              placeholder="Search products, designs..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 text-sm"
@@ -117,15 +123,12 @@ function ProductsCatalogPage() {
             <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
             <select
               value={sortBy}
-              onChange={(e) =>
-                setSortBy(e.target.value as "featured" | "price-asc" | "price-desc" | "rating")
-              }
+              onChange={(e) => setSortBy(e.target.value as "featured" | "price-asc" | "price-desc")}
               className="h-10 rounded-md border border-input bg-background px-3 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="featured">Sort by: Featured</option>
               <option value="price-asc">Price: Low to High</option>
               <option value="price-desc">Price: High to Low</option>
-              <option value="rating">Highest Rated</option>
             </select>
           </div>
         </div>
@@ -134,7 +137,7 @@ function ProductsCatalogPage() {
       {filteredProducts.length === 0 ? (
         <div className="my-16 rounded-2xl border border-dashed border-border p-12 text-center">
           <p className="font-display text-lg font-semibold text-foreground">
-            No pieces match your search or filter
+            No products match your search or filter
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
             Try broadening your search term or picking a different category.

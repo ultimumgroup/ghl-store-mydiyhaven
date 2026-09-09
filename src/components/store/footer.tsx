@@ -1,68 +1,70 @@
 import { Link } from "@tanstack/react-router";
-import { Logo } from "@/components/store/logo";
-import { BRAND_NAME } from "@/lib/brand";
-
+import { ArrowUpRight } from "lucide-react";
 export function Footer() {
   return (
-    <footer className="border-t border-border bg-secondary/30">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-          <div className="col-span-2 md:col-span-1">
-            <Logo
-              to="/"
-              className="h-12 w-auto"
-              textClassName="font-display text-xl font-bold text-amber"
+    <footer className="haven-footer">
+      <div className="haven-shell">
+        <div className="haven-footer-top">
+          <div>
+            <p className="haven-eyebrow">My DIY Haven</p>
+            <h2>
+              A little creativity.
+              <br />A lot of possibility.
+            </h2>
+          </div>
+          <Link className="haven-button" to="/products">
+            Find your next project <ArrowUpRight size={18} />
+          </Link>
+        </div>
+        <div className="haven-footer-grid">
+          <div>
+            <img
+              src="/images/my-diy-haven-gold-full.png"
+              width="900"
+              height="576"
+              alt="My DIY Haven — Create. Connect. Heal. Belong."
+              className="haven-footer-mark"
+              loading="lazy"
             />
-            <p className="mt-3 max-w-xs text-sm text-muted-foreground">
-              Handmade home goods, shaped slowly and made to last.
+            <p>
+              Veteran founded. Open-hearted.
+              <br />
+              Healing Through Creativity.
             </p>
           </div>
           <div>
-            <p className="font-display text-sm font-semibold text-foreground">Shop</p>
-            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-              <li>
-                <Link to="/" className="hover:text-foreground">
-                  All pieces
-                </Link>
-              </li>
-              <li>
-                <a href="#shop" className="hover:text-foreground">
-                  Bestsellers
-                </a>
-              </li>
-              <li>
-                <a href="#story" className="hover:text-foreground">
-                  New arrivals
-                </a>
-              </li>
-            </ul>
+            <h3>Find your inspiration</h3>
+            <Link to="/products">Shop all products</Link>
+            <Link to="/collections">Explore collections</Link>
+            <Link to="/about">Meet Larry Dillon</Link>
           </div>
           <div>
-            <p className="font-display text-sm font-semibold text-foreground">Studio</p>
-            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-              <li>
-                <a href="#story" className="hover:text-foreground">
-                  Our story
-                </a>
-              </li>
-              <li>
-                <a href="#craft" className="hover:text-foreground">
-                  The craft
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <p className="font-display text-sm font-semibold text-foreground">Support</p>
-            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-              <li className="hover:text-foreground">Shipping</li>
-              <li className="hover:text-foreground">Returns</li>
-              <li className="hover:text-foreground">Care guide</li>
-            </ul>
+            <h3>Make room for making</h3>
+            <Link to="/studio">Classes & studio</Link>
+            <p>
+              Candle & soap classes, open studio
+              <br />
+              and private events — coming soon.
+            </p>
+            <p>Based at Elevator CoWarehousing.</p>
           </div>
         </div>
-        <div className="mt-10 border-t border-border pt-6 text-xs text-muted-foreground">
-          © {new Date().getFullYear()} {BRAND_NAME}. Made by hand.
+        <div className="haven-footer-bottom">
+          <p>© {new Date().getFullYear()} My DIY Haven. Create. Connect. Heal. Belong.</p>
+          <a
+            href="https://ultimumgroup.com/solutions/dev/smart-websites"
+            className="haven-ultimum"
+            aria-label="Website by Ultimum — Smart Websites"
+          >
+            <span>Website by</span>
+            <img
+              src="/images/ultimum-wordmark.svg"
+              alt="Ultimum"
+              width="100"
+              height="24"
+              loading="lazy"
+            />
+          </a>
         </div>
       </div>
     </footer>

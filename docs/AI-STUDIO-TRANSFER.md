@@ -14,3 +14,7 @@ Copy the current versions of the changed files together, including new modules:
 Keep `GHL_LOCATION_ID` and `GHL_PIT` in AI Studio's server secret settings. Do not upload `.env.local`, `.git`, node_modules, local logs or test-results. Rebuild in AI Studio and check `/store-diagnostics`, a collection, a variant product, cart reload and quote. Checkout intentionally says online payment is not available; it must remain so until actual payment processing is integrated and tested.
 
 The previous cart format is intentionally not migrated. A shopper with an old export cookie starts an empty cart; new v2 carts persist. No live customers or deployed storefront were changed during this local pass.
+
+## Brand/page update
+
+Also transfer the complete `public/images/` directory, `public/robots.txt`, `public/sitemap.xml`, `src/styles.css`, the updated header/footer/home-content, and all changed route files including new `about.tsx` and `studio.tsx`. Regenerate the TanStack route tree during build (the local generated tree is included). The local documentation screenshot in `docs/reference/` is not a public asset. Preserve runtime secret settings. See BRAND-AND-PAGES.md for design choices and upcoming-feature boundaries.
