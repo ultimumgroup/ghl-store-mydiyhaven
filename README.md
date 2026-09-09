@@ -35,6 +35,50 @@ Your Private Integration Token (PIT) has been granted the following scope set:
 
 ---
 
+## Diagnostic Tooling
+
+The storefront ships with read-only diagnostic tooling so agents and admins can verify the headless e-commerce connection without touching the UI.
+
+### Diagnostics page
+- **`/store-diagnostics`** — A noindex page rendering a live JSON-style health report.
+  - File: `src/routes/store-diagnostics.tsx`
+  - Reports: secret presence (without leaking values), catalog live/fallback status, product & collection counts, priced-product count, variant count, a sample product, and a live promo-code validation probe.
+  - Click "Refresh" to re-run; data is fetched fresh each time (`staleTime: 0`).
+
+### Server function (for programmatic / UI use)
+- **`getStoreDiagnostics()`** — `src/lib/diagnostics.functions.ts` — same report via TanStack RPC, callable from any component with `useServerFn`.
+- Helper: `src/lib/diagnostics.server.ts` (`runDiagnostics()`).
+
+### Catalog status (lightweight)
+- **`getCatalogStatus()`** — `src/lib/ghl.functions.ts` — returns `{ live, error, productCount, collectionCount }` only. Cheaper than the full diagnostics report.
+
+### Demo promo codes (fallback)
+When the live coupons endpoint is unavailable, these codes validate locally:
+`HAVEN10` (10% off), `WELCOME15` (15% off + free shipping), `FREESHIP` (free shipping), `CRAFT25` ($25 off).
+
+---
+
+## Cart & Checkout Persistence
+
+The cart and applied promo code persist across sessions via cookies:
+
+- **`mdh_cart`** — serialized cart state (products, variants, quantities). 1-year expiry.
+- **`mdh_promo`** — applied promo code. Cleared on order completion.
+- Helpers: `src/lib/cookies.ts` (browser-safe read/write/delete, JSON variants).
+- Providers restore from cookies on mount (post-hydration) and persist on every change.
+
+Cookies are `SameSite=Lax`, `path=/`, and deleted when the cart/promo is emptied.
+
+### Checkout flow & payment capture
+1. Cart drawer (`/`) → promo validation → "Proceed to checkout".
+2. `/checkout` — contact, shipping, and card payment form; live order summary calculations.
+3. `placeStoreOrder` server function creates the order in the e-commerce system (`POST /payments/orders`).
+4. Using the granted `payments/orders.collectPayment` scope, payment is immediately recorded via `POST /payments/orders/:orderId/record-payment` with card brand, last 4 digits, and full order amount, marking the order status as Paid.
+5. On success: cart + promo cookies are cleared, and customer is redirected to `/order-confirmation?orderId=…`.
+6. On order failure: error toast is shown and cart is preserved for retry.
+
+---
+
 ## Storefront Routes & Features
 
 - `/` — Homepage with Hero, Trust badges, Collection spotlight, and Story.
@@ -44,6 +88,7 @@ Your Private Integration Token (PIT) has been granted the following scope set:
 - `/collections/$slug` — Dedicated Collection Page with filtered products.
 - `/checkout` — Headless order checkout flow connecting to server order creation.
 - `/order-confirmation` — Order confirmation page displaying unique order reference IDs.
+- `/store-diagnostics` — Read-only health report for the e-commerce integration (noindex).
 
 ## Development
 

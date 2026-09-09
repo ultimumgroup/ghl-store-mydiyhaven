@@ -1,5 +1,15 @@
-import { createContext, useContext, useMemo, useReducer, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import type { StoreProduct, StoreVariant } from "./catalog";
+import { readJSONCookie, writeJSONCookie, deleteCookie } from "./cookies";
 
 export type CartItem = {
   product: StoreProduct;
@@ -15,19 +25,22 @@ type Action =
   | { type: "add"; product: StoreProduct; variant?: StoreVariant; quantity?: number }
   | { type: "remove"; lineKey: string }
   | { type: "setQty"; lineKey: string; quantity: number }
-  | { type: "clear" };
+  | { type: "clear" }
+  | { type: "hydrate"; state: CartState };
 
 function lineKeyFor(productId: string, variantId?: string): string {
   return `${productId}::${variantId || "default"}`;
 }
 
-function unitPrice(product: StoreProduct, variant?: StoreVariant): number {
+export function unitPrice(product: StoreProduct, variant?: StoreVariant): number {
   if (variant?.price != null) return variant.price;
   return product.price;
 }
 
 function reducer(state: CartState, action: Action): CartState {
   switch (action.type) {
+    case "hydrate":
+      return action.state;
     case "add": {
       const { product, variant, quantity = 1 } = action;
       const key = lineKeyFor(product.id, variant?.id);
@@ -70,10 +83,39 @@ type CartContextValue = {
   clear: () => void;
 };
 
+const CART_COOKIE = "mdh_cart";
 const CartContext = createContext<CartContextValue | null>(null);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, {});
+  // Track whether we've hydrated from the cookie to avoid overwriting it
+  // with the empty initial state before the restore runs.
+  const [hydrated, setHydrated] = useState(false);
+  const firstWrite = useRef(true);
+
+  // Restore cart from cookie on mount (client-only, post-hydration).
+  useEffect(() => {
+    const saved = readJSONCookie<CartState>(CART_COOKIE);
+    if (saved && typeof saved === "object") {
+      dispatch({ type: "hydrate", state: saved });
+    }
+    setHydrated(true);
+  }, []);
+
+  // Persist cart to cookie whenever it changes (after initial hydration).
+  useEffect(() => {
+    if (!hydrated) return;
+    // Skip the very first post-hydration write if nothing changed.
+    if (firstWrite.current) {
+      firstWrite.current = false;
+      return;
+    }
+    if (Object.keys(state).length === 0) {
+      deleteCookie(CART_COOKIE);
+    } else {
+      writeJSONCookie(CART_COOKIE, state);
+    }
+  }, [state, hydrated]);
 
   const value = useMemo<CartContextValue>(() => {
     const items = Object.values(state);
@@ -97,4 +139,4 @@ export function useCart() {
   return ctx;
 }
 
-export { lineKeyFor, unitPrice };
+export { lineKeyFor, CART_COOKIE };

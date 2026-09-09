@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { BRAND_NAME, ORDER_PREFIX } from "@/lib/brand";
 
 export const Route = createFileRoute("/order-confirmation")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    orderId: typeof search.orderId === "string" ? search.orderId : undefined,
+  }),
   head: () => ({
     meta: [
       { title: `Order confirmed — ${BRAND_NAME}` },
@@ -20,10 +23,8 @@ export const Route = createFileRoute("/order-confirmation")({
 });
 
 function ConfirmationPage() {
-  const search = Route.useSearch({
-    select: (s) => (s as { orderId?: string })?.orderId,
-  });
-  const orderNo = search || `${ORDER_PREFIX}-${Math.floor(100000 + Math.random() * 899999)}`;
+  const { orderId } = Route.useSearch();
+  const orderNo = orderId || `${ORDER_PREFIX}-${Math.floor(100000 + Math.random() * 899999)}`;
   return (
     <div className="mx-auto flex max-w-lg flex-col items-center px-4 py-20 text-center sm:px-6">
       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent text-accent-foreground">

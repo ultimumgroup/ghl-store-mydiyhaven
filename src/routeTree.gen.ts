@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as OrderConfirmationRouteImport } from './routes/order-confirmation'
+import { Route as StoreDiagnosticsRouteImport } from './routes/store-diagnostics'
 import { Route as CollectionsIndexRouteImport } from './routes/collections.index'
 import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
 import { Route as ProductsIndexRouteImport } from './routes/products.index'
@@ -30,6 +31,11 @@ const CheckoutRoute = CheckoutRouteImport.update({
 const OrderConfirmationRoute = OrderConfirmationRouteImport.update({
   id: '/order-confirmation',
   path: '/order-confirmation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StoreDiagnosticsRoute = StoreDiagnosticsRouteImport.update({
+  id: '/store-diagnostics',
+  path: '/store-diagnostics',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CollectionsIndexRoute = CollectionsIndexRouteImport.update({
@@ -57,6 +63,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/checkout': typeof CheckoutRoute
   '/order-confirmation': typeof OrderConfirmationRoute
+  '/store-diagnostics': typeof StoreDiagnosticsRoute
   '/collections/$slug': typeof CollectionsSlugRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/collections/': typeof CollectionsIndexRoute
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/checkout': typeof CheckoutRoute
   '/order-confirmation': typeof OrderConfirmationRoute
+  '/store-diagnostics': typeof StoreDiagnosticsRoute
   '/collections/$slug': typeof CollectionsSlugRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/collections': typeof CollectionsIndexRoute
@@ -76,6 +84,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/checkout': typeof CheckoutRoute
   '/order-confirmation': typeof OrderConfirmationRoute
+  '/store-diagnostics': typeof StoreDiagnosticsRoute
   '/collections/$slug': typeof CollectionsSlugRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/collections/': typeof CollectionsIndexRoute
@@ -87,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/checkout'
     | '/order-confirmation'
+    | '/store-diagnostics'
     | '/collections/$slug'
     | '/products/$slug'
     | '/collections/'
@@ -96,6 +106,7 @@ export interface FileRouteTypes {
     | '/'
     | '/checkout'
     | '/order-confirmation'
+    | '/store-diagnostics'
     | '/collections/$slug'
     | '/products/$slug'
     | '/collections'
@@ -105,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/checkout'
     | '/order-confirmation'
+    | '/store-diagnostics'
     | '/collections/$slug'
     | '/products/$slug'
     | '/collections/'
@@ -115,6 +127,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CheckoutRoute: typeof CheckoutRoute
   OrderConfirmationRoute: typeof OrderConfirmationRoute
+  StoreDiagnosticsRoute: typeof StoreDiagnosticsRoute
   CollectionsSlugRoute: typeof CollectionsSlugRoute
   ProductsSlugRoute: typeof ProductsSlugRoute
   CollectionsIndexRoute: typeof CollectionsIndexRoute
@@ -142,6 +155,13 @@ declare module '@tanstack/react-router' {
       path: '/order-confirmation'
       fullPath: '/order-confirmation'
       preLoaderRoute: typeof OrderConfirmationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/store-diagnostics': {
+      id: '/store-diagnostics'
+      path: '/store-diagnostics'
+      fullPath: '/store-diagnostics'
+      preLoaderRoute: typeof StoreDiagnosticsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/collections/': {
@@ -179,6 +199,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CheckoutRoute: CheckoutRoute,
   OrderConfirmationRoute: OrderConfirmationRoute,
+  StoreDiagnosticsRoute: StoreDiagnosticsRoute,
   CollectionsSlugRoute: CollectionsSlugRoute,
   ProductsSlugRoute: ProductsSlugRoute,
   CollectionsIndexRoute: CollectionsIndexRoute,

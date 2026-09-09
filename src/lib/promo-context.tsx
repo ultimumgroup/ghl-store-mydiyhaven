@@ -1,4 +1,13 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import { readJSONCookie, writeJSONCookie, deleteCookie } from "./cookies";
 
 export type AppliedPromo = {
   code: string;
@@ -15,15 +24,41 @@ type PromoContextValue = {
   getDiscount: (subtotal: number) => number;
 };
 
+const PROMO_COOKIE = "mdh_promo";
 const PromoContext = createContext<PromoContextValue | null>(null);
 
 export function PromoProvider({ children }: { children: ReactNode }) {
-  const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
+  const [appliedPromo, setAppliedPromoState] = useState<AppliedPromo | null>(null);
+  const [hydrated, setHydrated] = useState(false);
+  const firstWrite = useRef(true);
+
+  // Restore applied promo from cookie on mount.
+  useEffect(() => {
+    const saved = readJSONCookie<AppliedPromo>(PROMO_COOKIE);
+    if (saved && saved.code) {
+      setAppliedPromoState(saved);
+    }
+    setHydrated(true);
+  }, []);
+
+  // Persist promo to cookie whenever it changes (after hydration).
+  useEffect(() => {
+    if (!hydrated) return;
+    if (firstWrite.current) {
+      firstWrite.current = false;
+      return;
+    }
+    if (appliedPromo) {
+      writeJSONCookie(PROMO_COOKIE, appliedPromo);
+    } else {
+      deleteCookie(PROMO_COOKIE);
+    }
+  }, [appliedPromo, hydrated]);
 
   const value = useMemo<PromoContextValue>(
     () => ({
       appliedPromo,
-      setAppliedPromo,
+      setAppliedPromo: setAppliedPromoState,
       getDiscount: (subtotal: number) => {
         if (!appliedPromo) return 0;
         const base = Math.max(0, subtotal);
@@ -45,3 +80,5 @@ export function usePromo() {
   if (!ctx) throw new Error("usePromo must be used within PromoProvider");
   return ctx;
 }
+
+export { PROMO_COOKIE };

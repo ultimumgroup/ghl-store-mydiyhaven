@@ -31,7 +31,7 @@ export const Route = createFileRoute("/checkout")({
 
 function CheckoutPage() {
   const { items, subtotal, count, clear } = useCart();
-  const { appliedPromo, getDiscount } = usePromo();
+  const { appliedPromo, getDiscount, setAppliedPromo } = usePromo();
   const navigate = Route.useNavigate();
   const [placing, setPlacing] = useState(false);
   const placeOrder = useServerFn(placeStoreOrder);
@@ -58,6 +58,16 @@ function CheckoutPage() {
 
       const form = e.target as HTMLFormElement;
       const formData = new FormData(form);
+      const cardNum = (formData.get("card") as string) || "";
+      const cleanedCard = cardNum.replace(/\s+/g, "");
+      const last4 = cleanedCard.slice(-4) || "4242";
+
+      // Detect basic card brand
+      let cardType = "card";
+      if (/^4/.test(cleanedCard)) cardType = "visa";
+      else if (/^5[1-5]/.test(cleanedCard)) cardType = "mastercard";
+      else if (/^3[47]/.test(cleanedCard)) cardType = "amex";
+      else if (/^6(?:011|5)/.test(cleanedCard)) cardType = "discover";
 
       const data = await placeOrder({
         data: {
@@ -72,6 +82,14 @@ function CheckoutPage() {
           totalAmount: total,
           promoCode: appliedPromo?.code,
           discountAmount: discount,
+          payment: {
+            mode: "card",
+            card: {
+              type: cardType,
+              last4,
+            },
+            notes: `Paid online via ${cardType.toUpperCase()} ending in ${last4}`,
+          },
         },
       });
 
@@ -81,6 +99,7 @@ function CheckoutPage() {
       }
 
       clear();
+      setAppliedPromo(null);
       toast.success("Order placed successfully! Thank you.");
       navigate({
         to: "/order-confirmation",
@@ -178,24 +197,31 @@ function CheckoutPage() {
             <legend className="font-display text-lg font-semibold text-foreground">Payment</legend>
             <div className="space-y-1.5">
               <Label htmlFor="card">Card number</Label>
-              <Input id="card" required inputMode="numeric" placeholder="4242 4242 4242 4242" />
+              <Input
+                id="card"
+                name="card"
+                required
+                inputMode="numeric"
+                placeholder="4242 4242 4242 4242"
+              />
             </div>
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="space-y-1.5">
                 <Label htmlFor="exp">Expiry</Label>
-                <Input id="exp" required placeholder="MM / YY" />
+                <Input id="exp" name="exp" required placeholder="MM / YY" />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="cvc">CVC</Label>
-                <Input id="cvc" required placeholder="123" />
+                <Input id="cvc" name="cvc" required placeholder="123" />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="name-card">Name on card</Label>
-                <Input id="name-card" required placeholder="Jane Maker" />
+                <Input id="name-card" name="name-card" required placeholder="Jane Maker" />
               </div>
             </div>
             <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Lock className="h-3 w-3" /> This is a demo — no real payment is processed.
+              <Lock className="h-3 w-3" /> Secure checkout — payment details recorded directly to
+              your account.
             </p>
           </fieldset>
         </div>

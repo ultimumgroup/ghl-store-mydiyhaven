@@ -59,6 +59,18 @@ const placeOrderSchema = z.object({
   totalAmount: z.number(),
   promoCode: z.string().optional(),
   discountAmount: z.number().optional(),
+  payment: z
+    .object({
+      mode: z.enum(["card", "cash", "cheque", "bank_transfer", "other"]).optional(),
+      card: z
+        .object({
+          type: z.string().optional(),
+          last4: z.string().optional(),
+        })
+        .optional(),
+      notes: z.string().optional(),
+    })
+    .optional(),
 });
 
 export const placeStoreOrder = createServerFn({ method: "POST" })

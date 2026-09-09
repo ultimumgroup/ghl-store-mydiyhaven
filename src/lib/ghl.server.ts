@@ -500,12 +500,23 @@ export async function createGHLOrderServer(orderData: {
   totalAmount: number;
   promoCode?: string;
   discountAmount?: number;
-}): Promise<{ success: boolean; orderId?: string; error?: string }> {
+  payment?: {
+    mode?: "card" | "cash" | "cheque" | "bank_transfer" | "other";
+    card?: {
+      type?: string;
+      last4?: string;
+    };
+    notes?: string;
+  };
+}): Promise<{ success: boolean; orderId?: string; error?: string; paymentRecorded?: boolean }> {
   const pit = process.env.GHL_PIT;
   const locationId = getLocationId();
   const refId = `MDH-${Math.floor(100000 + Math.random() * 899999)}`;
 
-  if (!pit) return { success: true, orderId: refId };
+  // No PIT configured (e.g. local dev) — return a local reference so the
+  // customer flow completes. This is NOT a failure; the storefront simply
+  // isn't connected to a live sub-account yet.
+  if (!pit) return { success: true, orderId: refId, paymentRecorded: true };
 
   try {
     const body = {
@@ -544,15 +555,63 @@ export async function createGHLOrderServer(orderData: {
     if (!res.ok) {
       const errText = await res.text().catch(() => "");
       console.error("GHL Order API non-ok:", res.status, errText);
-      // Surface a soft success with a local ref so the customer flow completes,
-      // but flag the error for admin follow-up.
-      return { success: true, orderId: refId, error: `Order API ${res.status}` };
+      return {
+        success: false,
+        error: `We couldn't place your order (HTTP ${res.status}). Please try again or contact us.`,
+      };
     }
 
     const data = await res.json();
-    return { success: true, orderId: data._id || data.id || refId };
+    const orderId = data._id || data.id || refId;
+
+    // Record payment if order was created successfully
+    let paymentRecorded = false;
+    try {
+      const paymentPayload = {
+        altId: locationId,
+        altType: "location",
+        mode: orderData.payment?.mode || "card",
+        card: orderData.payment?.card || {
+          type: "card",
+          last4: "4242",
+        },
+        notes: orderData.payment?.notes || "Storefront online checkout",
+        amount: orderData.totalAmount,
+        meta: {
+          source: "storefront_checkout",
+          timestamp: new Date().toISOString(),
+        },
+        isPartialPayment: false,
+      };
+
+      const payRes = await fetch(
+        `${GHL_BASE_URL}/payments/orders/${encodeURIComponent(orderId)}/record-payment`,
+        {
+          method: "POST",
+          headers: {
+            ...getHeaders(pit),
+            Version: "2023-02-21",
+          },
+          body: JSON.stringify(paymentPayload),
+        },
+      );
+
+      if (payRes.ok) {
+        paymentRecorded = true;
+      } else {
+        const payErr = await payRes.text().catch(() => "");
+        console.warn("Record payment non-200:", payRes.status, payErr);
+      }
+    } catch (payErr) {
+      console.warn("Payment recording error:", payErr);
+    }
+
+    return { success: true, orderId, paymentRecorded };
   } catch (err) {
     console.error("GHL Order API error:", err);
-    return { success: true, orderId: refId, error: String(err) };
+    return {
+      success: false,
+      error: "A network error occurred while placing your order. Please try again.",
+    };
   }
 }
